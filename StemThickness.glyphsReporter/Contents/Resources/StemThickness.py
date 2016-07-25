@@ -461,7 +461,7 @@ class StemThickness(ReporterPlugin):
         except:
             print traceback.format_exc()
 
-    ####### ShowStems by Mark2Mark
+    ####### From ShowStems by Mark2Mark
 
     def drawRoundedRectangleForStringAtPosition(self, thisString, center, fontsize, color=(0, .3, .8, .65) ):
         ''' Thanks to Mekkablue for this one '''
