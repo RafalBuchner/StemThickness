@@ -204,7 +204,7 @@ class StemThickness(ReporterPlugin):
         myPointsSize = HandleSize - HandleSize / 8
         zoomedMyPoints = myPointsSize / scale
         
-        if distanceAB(crossHairCenter,resultPoints['onCurve']) <= 20/scale:
+        if distanceAB(crossHairCenter,resultPoints['onCurve']) <= 35/scale:
 
             self.drawPoint(resultPoints['onCurve'], zoomedMyPoints)
             # returns list of intersections
