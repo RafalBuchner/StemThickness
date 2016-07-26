@@ -179,15 +179,15 @@ class StemThickness(ReporterPlugin):
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
 
-    def _foreground(self, layer):
+    def _background(self, layer):
         try:
             import cProfile
-            cProfile.runctx('self._foreground(layer)', globals(), locals())
+            cProfile.runctx('self._background(layer)', globals(), locals())
             print "**"
         except:
             print traceback.format_exc()
         
-    def foreground(self, layer):
+    def background(self, layer):
         view = self.controller.graphicView()
         crossHairCenter = view.getActiveLocation_(Glyphs.currentEvent())
         scale = self.getScale() # scale of edit window
@@ -304,8 +304,10 @@ class StemThickness(ReporterPlugin):
             
             firstDraws  = False
             secondDraws = False
-            blue = ( 0.2, 0.0, 0.9, 1 )
-            red  =  (0.9, 0.0, 0.2, 1)
+            # blue = ( 0.2, 0.0, 0.9, 1 )
+            # red  =  (0.9, 0.0, 0.2, 1)
+            blue = ( 0.76, 0.75, 0.75, 1 ) # actually it is a grey color, I used blue and red for debuging
+            red  = ( 0.76, 0.75, 0.75, 1 )
             dot = ""
             if FirstDistance < 1199:
                 # sets colors
@@ -338,7 +340,8 @@ class StemThickness(ReporterPlugin):
 
                 thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointA.x],[resultPoints['onCurve'].y, FirstCrossPointA.y] )
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *firstColor ).set() #bule
-                NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
+                # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
+                self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointA )
                 self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9 , color = firstColor)
             
             SecondDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointB )
@@ -374,8 +377,12 @@ class StemThickness(ReporterPlugin):
 
                 thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointB.x],[resultPoints['onCurve'].y, FirstCrossPointB.y] )
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *secondColor ).set() #bule
-                NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
+                # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
+                self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointB )
                 self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9, color =secondColor )
+            
+            self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75,color = firstColor)
+            self.drawPoint(FirstCrossPointB, zoomedMyPoints*0.75, color =secondColor)
 
             if FirstCrossPointA == resultPoints['onCurve'] or FirstCrossPointA == resultPoints['onCurve']:
                 print "ERROR: crossPoint == ON CURVE POINT!!!!"
@@ -398,10 +405,10 @@ class StemThickness(ReporterPlugin):
         except:
             NSLog(traceback.format_exc())
 
-    def drawPoint(self, ThisPoint, scale):
+    def drawPoint(self, ThisPoint, scale, color = ( 0.2, 0.6, 0.6, 0.7 )):
         """from Show Angled Handles by MekkaBlue"""
         try:
-            NSColor.colorWithCalibratedRed_green_blue_alpha_( 0.2, 0.6, 0.6, 0.7 ).set()
+            NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set()
             seledinCircles = NSBezierPath.alloc().init()
             seledinCircles.appendBezierPath_( self.roundDotForPoint( ThisPoint, scale ) )
             seledinCircles.fill()
@@ -415,7 +422,13 @@ class StemThickness(ReporterPlugin):
         """
         myRect = NSRect( ( thisPoint.x - markerWidth * 0.5, thisPoint.y - markerWidth * 0.5 ), ( markerWidth, markerWidth ) )
         return NSBezierPath.bezierPathWithOvalInRect_(myRect)
-
+    def drawDashedStrokeAB(self,A,B):
+        bez = NSBezierPath.bezierPath()
+        bez.setLineWidth_(0)
+        bez.setLineDash_count_phase_([2.0,2.0], 2,0)
+        bez.moveToPoint_(A)
+        bez.lineToPoint_(B)
+        bez.stroke()
     def calcClosestPtOnCurveAndTangent(self, layer, crossHairCenter, scale):
         try:
             closestPoint = None
