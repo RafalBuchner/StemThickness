@@ -339,7 +339,7 @@ class StemThickness(ReporterPlugin):
                 thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointA.x],[resultPoints['onCurve'].y, FirstCrossPointA.y] )
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *firstColor ).set() #bule
                 NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
-                self.drawRoundedRectangleForStringAtPosition(distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9 , color = firstColor)
+                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9 , color = firstColor)
             
             SecondDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointB )
             if SecondDistance < 1199:
