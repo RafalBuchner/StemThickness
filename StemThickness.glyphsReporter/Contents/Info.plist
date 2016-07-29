@@ -21,9 +21,9 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.3</string>
+	<string>1.1.0</string>
 	<key>UpdateFeedURL</key>
-	<string>https://github.com/RafalBuchner/StemThickness/tree/master/StemThickness.glyphsReporter/Contents/Info.plist</string>
+	<string>https://github.com/RafalBuchner/StemThickness/master/StemThickness.glyphsReporter/Contents/Info.plist</string>
 	<key>productPageURL</key>
 	<string>https://raw.githubusercontent.com/RafalBuchner/StemThickness/</string>
 	<key>productReleaseNotes</key>
