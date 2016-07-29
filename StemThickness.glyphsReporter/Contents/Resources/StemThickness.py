@@ -179,7 +179,7 @@ class StemThickness(ReporterPlugin):
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
 
-    def _background(self, layer):
+    def _foreground(self, layer):
         try:
             import cProfile
             cProfile.runctx('self._background(layer)', globals(), locals())
@@ -187,11 +187,11 @@ class StemThickness(ReporterPlugin):
         except:
             print traceback.format_exc()
         
-    def background(self, layer):
+    def foreground(self, layer):
+        # Glyphs.clearLog() ### delete!
         view = self.controller.graphicView()
         crossHairCenter = view.getActiveLocation_(Glyphs.currentEvent())
         scale = self.getScale() # scale of edit window
-        print scale
         layer = Glyphs.font.selectedLayers[0]
 
         resultPoints  = NSPoint(-1,-1)
@@ -203,7 +203,7 @@ class StemThickness(ReporterPlugin):
         HandleSize = self.getHandleSize()
         myPointsSize = HandleSize - HandleSize / 8
         zoomedMyPoints = myPointsSize / scale
-        
+
         if distanceAB(crossHairCenter,resultPoints['onCurve']) <= 35/scale:
 
             self.drawPoint(resultPoints['onCurve'], zoomedMyPoints)
@@ -302,12 +302,15 @@ class StemThickness(ReporterPlugin):
 
             FirstDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointA )
             
+
             firstDraws  = False
             secondDraws = False
             # blue = ( 0.2, 0.0, 0.9, 1 )
             # red  =  (0.9, 0.0, 0.2, 1)
-            blue = ( 0.76, 0.75, 0.75, 1 ) # actually it is a grey color, I used blue and red for debuging
-            red  = ( 0.76, 0.75, 0.75, 1 )
+            # blue = ( 0.76, 0.75, 0.75, 1 ) # actually it is a grey color, I used blue and red for debuging
+            # red  = ( 0.76, 0.75, 0.75, 1 )
+            red  =  (0.96, 0.44, 0.44, 1)
+            blue = ( 0.65, 0.63, 0.94, 1 )
             dot = ""
             if FirstDistance < 1199:
                 # sets colors
@@ -317,19 +320,19 @@ class StemThickness(ReporterPlugin):
                 
                 # calculates how value of thickness will be shown
                 if scale < 2:
-                    print "scale < 2"
+                    # print "scale < 2"     ###TEST 
                     thisDistanceRounded = int(round(FirstDistance))
                     dot = "."
                 elif scale < 3:
-                    print "scale < 3"
+                    # print "scale < 3"     ###TEST 
                     thisDistanceRounded = round(FirstDistance, 1)
 
                 elif scale < 10:
-                    print "scale < 10"
+                    # print "scale < 10"    ###TEST 
                     thisDistanceRounded = round(FirstDistance, 2)
 
                 elif scale >= 10:
-                    print "scale >= 10"
+                    # print "scale >= 10"   ###TEST 
                     thisDistanceRounded = round(FirstDistance, 3)
 
                 else:
@@ -343,30 +346,31 @@ class StemThickness(ReporterPlugin):
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
                 self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointA )
                 self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9 , color = firstColor)
+                self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75, color = firstColor)
             
             SecondDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointB )
             if SecondDistance < 1199:
                 secondDraws = True
-                secondColor = red
+                secondColor = blue
 
                 if firstDraws == True:
                     secondColor = red
 
                 # calculates how value of thickness will be shown
                 if scale < 2:
-                    print "scale < 2"
+                    # print "scale < 2"
                     thisDistanceRounded = int(round(SecondDistance))
                     dot = "."
                 elif scale < 3:
-                    print "scale < 3"
+                    # print "scale < 3"
                     thisDistanceRounded = round(SecondDistance, 1)
 
                 elif scale < 10:
-                    print "scale < 10"
+                    # print "scale < 10"
                     thisDistanceRounded = round(SecondDistance, 2)
 
                 elif scale >= 10:
-                    print "scale >= 10"
+                    # print "scale >= 10"
                     thisDistanceRounded = round(SecondDistance, 3)
 
                 else:
@@ -380,10 +384,10 @@ class StemThickness(ReporterPlugin):
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
                 self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointB )
                 self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9, color =secondColor )
+                self.drawPoint(FirstCrossPointB, zoomedMyPoints*0.75, color = secondColor)
             
-            self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75,color = firstColor)
-            self.drawPoint(FirstCrossPointB, zoomedMyPoints*0.75, color =secondColor)
-
+            
+                        
             if FirstCrossPointA == resultPoints['onCurve'] or FirstCrossPointA == resultPoints['onCurve']:
                 print "ERROR: crossPoint == ON CURVE POINT!!!!"
 
@@ -392,6 +396,15 @@ class StemThickness(ReporterPlugin):
             # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], resultPoints['normal'] ) ### TEST
             # drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *red ).set() #bule
             # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], resultPoints['minusNormal'] ) ### TEST
+            
+            ###INTERSECTION TEST:
+            # testIn = self.intersectABwithEditView(resultPoints['onCurve'],FirstCrossPointA,scale)
+            # print testIn
+            # # self.intersectABwithEditView(resultPoints['onCurve'],FirstCrossPointB,scale)
+            # editTabGraphicView = self.controller.graphicView()
+            # visibleRect = editTabGraphicView.visibleRect()
+            # print visibleRect
+
 
     def mouseDidMove(self, notification):
         self.controller.view().setNeedsDisplay_(True)
@@ -542,7 +555,56 @@ class StemThickness(ReporterPlugin):
             return segment
         except:
             print traceback.format_exc()
+    # def intersectABwithEditView(self,A,B,scale):
+    #     try:
+    #         A.x = A.x / scale
+    #         A.y = A.y / scale
+    #         B.x = B.x / scale
+    #         B.y = B.y / scale
 
+    #         # scale = getScale()
+    #         myGraphicView = self.controller.graphicView()
+    #         EditView = myGraphicView.visibleRect()
+    #         EditView.origin.x = EditView.origin.x
+    #         EditView.origin.y = EditView.origin.y
+    #         # EditView.width = EditView.size.width * scale
+    #         # EditView.height = EditView.size.height * scale
 
+    #         # Top left corner of the screen
+    #         TL   = GSNode(0,0)
+    #         TL.x = EditView.origin.x
+    #         TL.y = EditView.origin.y + EditView.size.height
+
+    #         # Top right corner of the screen
+    #         TR   = GSNode(0,0)
+    #         TR.x = EditView.origin.x + EditView.size.width
+    #         TR.y = EditView.origin.y + EditView.size.height
+
+    #         # Bottom right corner of the screen
+    #         BR   = GSNode(0,0)
+        #     BR.x = EditView.origin.x + EditView.size.width
+        #     BR.y = EditView.origin.y
+
+        #     # bottom left corner of the screen
+        #     BL   = GSNode(0,0)
+        #     BL.x = EditView.origin.x
+        #     BL.y = EditView.origin.y
+        #     myPath = GSPath()
+        #     myNodes = myPath.nodes
+        #     # print "###############"
+        #     myNodes.append(TL)
+        #     myNodes.append(TR)
+        #     myNodes.append(BR)
+        #     myNodes.append(BL)
+        #     myLayer = GSLayer()
+        #     myLayerPaths = myLayer.paths
+        #     myLayer.paths.append(myPath)
+        #     cross = myLayer.intersectionsBetweenPoints(A,B)
+
+        #     # print (TL:%s BR:%s)%(TL,BR)
+        #     return cross
+        # except:
+        #     print traceback.format_exc()
+        
 
 
