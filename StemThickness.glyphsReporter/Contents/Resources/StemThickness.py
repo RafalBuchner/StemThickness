@@ -179,7 +179,7 @@ class StemThickness(ReporterPlugin):
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
 
-    def _foreground(self, layer):
+    def _background(self, layer):
         try:
             import cProfile
             cProfile.runctx('self._background(layer)', globals(), locals())
@@ -187,7 +187,7 @@ class StemThickness(ReporterPlugin):
         except:
             print traceback.format_exc()
         
-    def foreground(self, layer):
+    def background(self, layer):
         # Glyphs.clearLog() ### delete!
         view = self.controller.graphicView()
         crossHairCenter = view.getActiveLocation_(Glyphs.currentEvent())
@@ -345,7 +345,7 @@ class StemThickness(ReporterPlugin):
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *firstColor ).set() #bule
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
                 self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointA )
-                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9 , color = firstColor)
+                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 10, color = firstColor)
                 self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75, color = firstColor)
             
             SecondDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointB )
@@ -383,7 +383,7 @@ class StemThickness(ReporterPlugin):
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *secondColor ).set() #bule
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
                 self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointB )
-                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 9, color =secondColor )
+                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 10, color =secondColor )
                 self.drawPoint(FirstCrossPointB, zoomedMyPoints*0.75, color = secondColor)
             
             
