@@ -179,15 +179,15 @@ class StemThickness(ReporterPlugin):
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
 
-    def _background(self, layer):
+    def _foreground(self, layer):
         try:
             import cProfile
-            cProfile.runctx('self._background(layer)', globals(), locals())
+            cProfile.runctx('self._foreground(layer)', globals(), locals())
             print "**"
         except:
             print traceback.format_exc()
         
-    def background(self, layer):
+    def foreground(self, layer):
         # Glyphs.clearLog() ### delete!
         view = self.controller.graphicView()
         crossHairCenter = view.getActiveLocation_(Glyphs.currentEvent())
@@ -345,7 +345,7 @@ class StemThickness(ReporterPlugin):
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *firstColor ).set() #bule
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
                 self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointA )
-                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 10, color = firstColor)
+                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color = firstColor)
                 self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75, color = firstColor)
             
             SecondDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointB )
@@ -383,7 +383,7 @@ class StemThickness(ReporterPlugin):
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *secondColor ).set() #bule
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
                 self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointB )
-                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 10, color =secondColor )
+                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color =secondColor )
                 self.drawPoint(FirstCrossPointB, zoomedMyPoints*0.75, color = secondColor)
             
             
@@ -498,8 +498,11 @@ class StemThickness(ReporterPlugin):
         panel = NSRect()
         panel.origin = NSPoint( x-width/2, y-scaledSize/2-rim )
         panel.size = NSSize( width, scaledSize + rim*2 )
-        NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set()
+        NSColor.colorWithCalibratedRed_green_blue_alpha_( 1,1,1,1 ).set()
+        # NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set() # ORGINAL
         NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).fill()
+        NSColor.colorWithCalibratedRed_green_blue_alpha_( 0,0,0,0.1 ).set()
+        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).stroke()
         self.drawTextAtPoint(thisString, center, fontsize )
     def drawTextAtPoint(self, text, textPosition, fontSize=10.0, fontColor=NSColor.blackColor(), align='center'):
         """
@@ -523,7 +526,9 @@ class StemThickness(ReporterPlugin):
             currentZoom = self.getScale()
             fontAttributes = { 
                 NSFontAttributeName: NSFont.labelFontOfSize_(fontSize/currentZoom),
-                NSForegroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 1, 1, 1, 1 ), # fontColor,
+
+                # NSForegroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 1, 1, 1, 1 ), # fontColor, original
+                NSForegroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 0,0,0,1 ), # fontColor,
                 # NSBackgroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 0, .3, .8, .65 ),
                 }
             displayText = NSAttributedString.alloc().initWithString_attributes_(text, fontAttributes)
