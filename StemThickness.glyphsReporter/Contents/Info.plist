@@ -25,7 +25,7 @@
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/RafalBuchner/StemThickness/master/StemThickness.glyphsReporter/Contents/Info.plist</string>
 	<key>productPageURL</key>
-	<string>https://raw.githubusercontent.com/RafalBuchner/StemThickness/</string>
+	<string>https://github.com/RafalBuchner/StemThickness</string>
 	<key>productReleaseNotes</key>
 	<string>____LatestReleaseNotes____</string>
 	<key>LSHasLocalizedDisplayName</key>
