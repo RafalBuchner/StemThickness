@@ -97,101 +97,100 @@ class StemThickness(ReporterPlugin):
         scale = self.getScale() # scale of edit window
         layer = Glyphs.font.selectedLayers[0]
 
-        #r eturns closest point on curve to crossHairCenter
-        resultPoints = self.calcClosestPtOnCurveAndTangent(layer, crossHairCenter,scale)
-        # print "resultPoints", resultPoints
-        # then point on curve (only in certian distance)
+        closestData = self.calcClosestInfo(layer, crossHairCenter)
+
         HandleSize = self.getHandleSize()
         myPointsSize = HandleSize - HandleSize / 8
         zoomedMyPoints = myPointsSize / scale
 
-        if distance(crossHairCenter,resultPoints['onCurve']) <= 35/scale:
+        if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
+            return
 
-            self.drawPoint(resultPoints['onCurve'], zoomedMyPoints)
-            # returns list of intersections
-            crossPoints = layer.intersectionsBetweenPoints( resultPoints['onCurve'],resultPoints['normal'])
-            MINUScrossPoints = layer.intersectionsBetweenPoints( resultPoints['onCurve'],resultPoints['minusNormal'])
-            segment = self.getCurrSegment(layer,crossHairCenter)
+        self.drawPoint(closestData['onCurve'], zoomedMyPoints)
+        # returns list of intersections
+        crossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['normal'])
+        MINUScrossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['minusNormal'])
+        segment = closestData["segment"]
 
-            if len(segment) == 4: # curves
-                MINUScrossPoints.reverse()
+        if len(segment) == 4: # curves
+            MINUScrossPoints.reverse()
+            i = -2
+            n = -2
+        else: # lines
+            allCurrPoints_x = []
+            allCurrPoints_y = []
+            for path in layer.paths:
+                for node in path.nodes:
+                    allCurrPoints_x.append(node.x)
+                    allCurrPoints_y.append(node.y)
+
+            if segment[0].y == segment[1].y and segment[0].y != min(allCurrPoints_y) and segment[0].y != max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL
+                crossPoints.reverse()
+                del crossPoints[-1]
+                del MINUScrossPoints[-1]
                 i = -2
                 n = -2
-            else: # lines
-                allCurrPoints_x = []
-                allCurrPoints_y = []
-                for path in layer.paths:
-                    for node in path.nodes:
-                        allCurrPoints_x.append(node.x)
-                        allCurrPoints_y.append(node.y)
+            elif segment[0].y == segment[1].y and segment[0].y == min(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the lowest level
+                # print "LOW LEVEL"
+                MINUScrossPoints.reverse()
+                crossPoints.reverse()
+                del crossPoints[-1]
+                i = -2
+                n = 1 
+            elif segment[0].y == segment[1].y and segment[0].y == max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the highest level
+                # print "HIGHT LEVEL"
+                MINUScrossPoints.reverse()
+                crossPoints.reverse()
+                del crossPoints[-1]
+                del MINUScrossPoints[-1]
+                i = 0
+                n = 2
+            elif segment[0].x == max(allCurrPoints_x) and segment[1].x == max(allCurrPoints_x): # for lines extreme right vertival lines
+                # print "RIGHT LEVEL"
+                crossPoints.reverse()
+                i = 2
+                n = 1
 
-                if segment[0].y == segment[1].y and segment[0].y != min(allCurrPoints_y) and segment[0].y != max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL
-                    crossPoints.reverse()
-                    del crossPoints[-1]
-                    del MINUScrossPoints[-1]
-                    i = -2
-                    n = -2
-                elif segment[0].y == segment[1].y and segment[0].y == min(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the lowest level
-                    # print "LOW LEVEL"
-                    MINUScrossPoints.reverse()
-                    crossPoints.reverse()
-                    del crossPoints[-1]
-                    i = -2
-                    n = 1 
-                elif segment[0].y == segment[1].y and segment[0].y == max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the highest level
-                    # print "HIGHT LEVEL"
-                    MINUScrossPoints.reverse()
-                    crossPoints.reverse()
-                    del crossPoints[-1]
-                    del MINUScrossPoints[-1]
-                    i = 0
-                    n = 2
-                elif segment[0].x == max(allCurrPoints_x) and segment[1].x == max(allCurrPoints_x): # for lines extreme right vertival lines
-                    # print "RIGHT LEVEL"
-                    crossPoints.reverse()
-                    i = 2
-                    n = 1
+            elif segment[0].x == segment[1].x and segment[1].x == min(allCurrPoints_x): # for lines extreme left vertival lines
+                # print "LEFT LEVEL"
+                i = 0
+                n = 2
 
-                elif segment[0].x == segment[1].x and segment[1].x == min(allCurrPoints_x): # for lines extreme left vertival lines
-                    # print "LEFT LEVEL"
-                    i = 0
-                    n = 2
+            elif segment[0].x != segment[1].x and segment[0].y != segment[1].y: 
+                # print "DIAGONAl"
+                del crossPoints[-1]
+                i = -2
+                n = 2
 
-                elif segment[0].x != segment[1].x and segment[0].y != segment[1].y: 
-                    # print "DIAGONAl"
-                    del crossPoints[-1]
-                    i = -2
-                    n = 2
+            elif segment[0].x == segment[1].x and segment[1].x != min(allCurrPoints_x) or segment[1].x != max(allCurrPoints_x):
+                # print "STRAIGHT"
+                del crossPoints[-1]
+                i = -2
+                n = 2
 
-                elif segment[0].x == segment[1].x and segment[1].x != min(allCurrPoints_x) or segment[1].x != max(allCurrPoints_x):
-                    # print "STRAIGHT"
-                    del crossPoints[-1]
-                    i = -2
-                    n = 2
+        FirstCrossPointA = NSPoint(crossPoints[i].x,crossPoints[i].y)           #blue
+        FirstCrossPointB = NSPoint(MINUScrossPoints[n].x,MINUScrossPoints[n].y) #red
 
-            FirstCrossPointA = NSPoint(crossPoints[i].x,crossPoints[i].y)           #blue
-            FirstCrossPointB = NSPoint(MINUScrossPoints[n].x,MINUScrossPoints[n].y) #red
+        FirstDistance  = distance( closestData['onCurve'], FirstCrossPointA )
+        SecondDistance = distance( closestData['onCurve'], FirstCrossPointB )
 
-            FirstDistance  = distance( resultPoints['onCurve'], FirstCrossPointA )
-            SecondDistance = distance( resultPoints['onCurve'], FirstCrossPointB )
+        # drawsLine between points on curve
+        NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
 
-            # drawsLine between points on curve
-            NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
+        firstDraws  = False
+        red  =  (0.96, 0.44, 0.44, 1)
+        blue = ( 0.65, 0.63, 0.94, 1 )
+        if FirstDistance < 1199:
+            firstDraws = True
+            self.showDistance(FirstDistance, FirstCrossPointA, closestData['onCurve'], blue)
+        if SecondDistance < 1199:
+            secondColor = blue
+            if firstDraws == True:
+                secondColor = red
+            self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
 
-            firstDraws  = False
-            red  =  (0.96, 0.44, 0.44, 1)
-            blue = ( 0.65, 0.63, 0.94, 1 )
-            if FirstDistance < 1199:
-                firstDraws = True
-                self.showDistance(FirstDistance, FirstCrossPointA, resultPoints['onCurve'], blue)
-            if SecondDistance < 1199:
-                secondColor = blue
-                if firstDraws == True:
-                    secondColor = red
-                self.showDistance(SecondDistance, FirstCrossPointB, resultPoints['onCurve'], secondColor)
-
-            if FirstCrossPointA == resultPoints['onCurve'] or FirstCrossPointA == resultPoints['onCurve']:
-                print "ERROR: crossPoint == ON CURVE POINT!!!!"
+        if FirstCrossPointA == closestData['onCurve'] or FirstCrossPointA == closestData['onCurve']:
+            print "ERROR: crossPoint == ON CURVE POINT!!!!"
 
     def showDistance(self, d, cross, onCurve, color):
         scale = self.getScale() # scale of edit window
@@ -241,50 +240,57 @@ class StemThickness(ReporterPlugin):
         bez.moveToPoint_(A)
         bez.lineToPoint_(B)
         bez.stroke()
-    def calcClosestPtOnCurveAndTangent(self, layer, crossHairCenter, scale):
-        try:
-            closestPoint = None
-            closestPath = None
-            closestPathTime = None
-            dist = 100000
-            for path in layer.paths:
-                currClosestPoint, currPathTime = path.nearestPointOnPath_pathTime_(crossHairCenter, None)
-                #print "currClosestPoint, crossHairCenter", currClosestPoint, currPathTime
-                currDist = distance(currClosestPoint, crossHairCenter)
-                if currDist < dist:
-                    dist = currDist
-                    closestPoint = currClosestPoint
-                    closestPathTime = currPathTime
-                    closestPath = path
-            n = math.floor(closestPathTime)
-            OnNode = closestPath.nodes[n]
-            if OnNode.type == CURVE:
-                segment = (closestPath.nodes[n - 3].position, closestPath.nodes[n - 2].position, closestPath.nodes[n - 1].position, OnNode.position)
-            else:
-                segment = (closestPath.nodes[n - 1].position, OnNode.position)
-            TangentDirection = calcTangent(closestPathTime % 1, segment)
-            diractionAngle = angle(closestPoint,TangentDirection)
 
-            if TangentDirection.x == segment[0].x : # eliminates problem with vertical lines ###UGLY?
-                diractionAngle = -math.pi/2
+    def calcClosestInfo(self, layer, pt):
+        closestPoint = None
+        closestPath = None
+        closestPathTime = None
+        dist = 100000
+        for path in layer.paths:
+            currClosestPoint, currPathTime = path.nearestPointOnPath_pathTime_(pt, None)
+            currDist = distance(currClosestPoint, pt)
+            if currDist < dist:
+                dist = currDist
+                closestPoint = currClosestPoint
+                closestPathTime = currPathTime
+                closestPath = path
 
-            if diractionAngle < 0:
-                diractionAngle += math.pi # 180 degree
+        n = math.floor(closestPathTime)
+        OnNode = closestPath.nodes[n]
+        if OnNode.type == CURVE:
+            segment = (closestPath.nodes[n - 3].position, closestPath.nodes[n - 2].position, closestPath.nodes[n - 1].position, OnNode.position)
+        else:
+            segment = (closestPath.nodes[n - 1].position, OnNode.position)
 
-            yTanDistance = (10000/scale) * math.sin(diractionAngle)
-            xTanDistance = (10000/scale) * math.cos(diractionAngle)
-            closestPointTangent = NSPoint(xTanDistance+closestPoint.x,yTanDistance+closestPoint.y)
-            closestPointNormal = NSPoint(rotatePoint(closestPointTangent, 90, closestPoint).x,rotatePoint(closestPointTangent, 90, closestPoint).y)   
+        TangentDirection = calcTangent(closestPathTime % 1, segment)
+        directionAngle = angle(closestPoint,TangentDirection)
 
-            MINUSyTanDistance = -yTanDistance
-            MINUSxTanDistance = -xTanDistance
-            MINUSclosestPointTangent = NSPoint(MINUSxTanDistance+closestPoint.x,MINUSyTanDistance+closestPoint.y)
-            minusClosestPointNormal = NSPoint(rotatePoint(MINUSclosestPointTangent, 90, closestPoint).x,rotatePoint(MINUSclosestPointTangent, 90, closestPoint).y)  
+        if TangentDirection.x == segment[0].x: # eliminates problem with vertical lines ###UGLY?
+            directionAngle = -math.pi/2
 
-            dictOfclosestAndTangent = {'onCurve': closestPoint,'normal': closestPointNormal,'minusNormal': minusClosestPointNormal}
-            return dictOfclosestAndTangent
-        except:
-            print traceback.format_exc()
+        if directionAngle < 0:
+            directionAngle += math.pi # 180 degree
+
+        scale = self.getScale()
+
+        yTanDistance = (10000/scale) * math.sin(directionAngle)
+        xTanDistance = (10000/scale) * math.cos(directionAngle)
+        closestPointTangent = NSPoint(xTanDistance+closestPoint.x,yTanDistance+closestPoint.y)
+        closestPointNormal = NSPoint(rotatePoint(closestPointTangent, 90, closestPoint).x,rotatePoint(closestPointTangent, 90, closestPoint).y)   
+
+        MINUSyTanDistance = -yTanDistance
+        MINUSxTanDistance = -xTanDistance
+        MINUSclosestPointTangent = NSPoint(MINUSxTanDistance+closestPoint.x,MINUSyTanDistance+closestPoint.y)
+        minusClosestPointNormal = NSPoint(rotatePoint(MINUSclosestPointTangent, 90, closestPoint).x,rotatePoint(MINUSclosestPointTangent, 90, closestPoint).y)  
+
+        return {
+            "onCurve": closestPoint,
+            "normal": closestPointNormal,
+            "pathTime": closestPathTime,
+            "path": closestPath,
+            "segment": segment,
+            "minusNormal": minusClosestPointNormal
+        }
 
     ####### From ShowStems by Mark2Mark
 
@@ -336,26 +342,3 @@ class StemThickness(ReporterPlugin):
         except:
             self.logError(traceback.format_exc())
 
-    def getCurrSegment(self,layer,crossHairCenter):
-        """Thanks to Georg"""
-        try:
-            closestPath = None
-            closestPathTime = None
-            dist = 100000
-            for path in layer.paths:
-                currClosestPoint, currPathTime = path.nearestPointOnPath_pathTime_(crossHairCenter, None)
-                #print "currClosestPoint, crossHairCenter", currClosestPoint, currPathTime
-                currDist = distance(currClosestPoint, crossHairCenter)
-                if currDist < dist:
-                    dist = currDist  
-                    closestPathTime = currPathTime
-                    closestPath = path
-            n = math.floor(closestPathTime)
-            OnNode = closestPath.nodes[n]
-            if OnNode.type == CURVE:
-                segment = (closestPath.nodes[n - 3].position, closestPath.nodes[n - 2].position, closestPath.nodes[n - 1].position, OnNode.position)
-            else:
-                segment = (closestPath.nodes[n - 1].position, OnNode.position)
-            return segment
-        except:
-            print traceback.format_exc()
