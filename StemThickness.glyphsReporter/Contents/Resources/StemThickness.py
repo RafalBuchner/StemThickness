@@ -98,14 +98,18 @@ class StemThickness(ReporterPlugin):
         layer = Glyphs.font.selectedLayers[0]
 
         closestData = self.calcClosestInfo(layer, crossHairCenter)
-
-        HandleSize = self.getHandleSize()
-        myPointsSize = HandleSize - HandleSize / 8
-        zoomedMyPoints = myPointsSize / scale
-
         if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
             return
 
+        self.drawCrossingsForData(closestData)
+
+    def drawCrossingsForData(self, closestData):
+        HandleSize = self.getHandleSize()
+        scale = self.getScale()
+        myPointsSize = HandleSize - HandleSize / 8
+        zoomedMyPoints = myPointsSize / scale
+
+        layer = closestData["layer"]
         self.drawPoint(closestData['onCurve'], zoomedMyPoints)
         # returns list of intersections
         crossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['normal'])
@@ -289,7 +293,8 @@ class StemThickness(ReporterPlugin):
             "pathTime": closestPathTime,
             "path": closestPath,
             "segment": segment,
-            "minusNormal": minusClosestPointNormal
+            "minusNormal": minusClosestPointNormal,
+            "layer": layer
         }
 
     ####### From ShowStems by Mark2Mark
