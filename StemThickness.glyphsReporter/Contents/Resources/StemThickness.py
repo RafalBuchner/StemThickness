@@ -59,6 +59,21 @@ def rotatePoint( P,angle, originPoint):
         RotatedPoint = NSPoint(x,y)
         return RotatedPoint
 
+def formatDistance(d, scale):
+    # calculates how value of thickness will be shown
+    dot = ""
+    roundedDistance = 0
+    if scale < 2:
+        roundedDistance = int(round(d))
+        dot = "."
+    elif scale < 3:
+        roundedDistance = round(d, 1)
+    elif scale < 10:
+        roundedDistance = round(d, 2)
+    elif scale >= 10:
+        roundedDistance = round(d, 3)
+    return str(roundedDistance) + dot
+
 class StemThickness(ReporterPlugin):
 
     def settings(self):
@@ -199,30 +214,7 @@ class StemThickness(ReporterPlugin):
                 # sets colors
                 firstDraws = True
                 firstColor = blue
-                
-                # calculates how value of thickness will be shown
-                if scale < 2:
-                    # print "scale < 2"     ###TEST 
-                    thisDistanceRounded = int(round(FirstDistance))
-                    dot = "."
-                elif scale < 3:
-                    # print "scale < 3"     ###TEST 
-                    thisDistanceRounded = round(FirstDistance, 1)
-
-                elif scale < 10:
-                    # print "scale < 10"    ###TEST 
-                    thisDistanceRounded = round(FirstDistance, 2)
-
-                elif scale >= 10:
-                    # print "scale >= 10"   ###TEST 
-                    thisDistanceRounded = round(FirstDistance, 3)
-
-                else:
-                    thisDistanceRounded = int(round(FirstDistance))
-                    dot = "."
-
-                distanceShowed = str(thisDistanceRounded)+dot
-
+                distanceShowed = formatDistance(FirstDistance,scale)
                 thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointA.x],[resultPoints['onCurve'].y, FirstCrossPointA.y] )
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *firstColor ).set() #bule
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
@@ -237,30 +229,7 @@ class StemThickness(ReporterPlugin):
 
                 if firstDraws == True:
                     secondColor = red
-
-                # calculates how value of thickness will be shown
-                if scale < 2:
-                    # print "scale < 2"
-                    thisDistanceRounded = int(round(SecondDistance))
-                    dot = "."
-                elif scale < 3:
-                    # print "scale < 3"
-                    thisDistanceRounded = round(SecondDistance, 1)
-
-                elif scale < 10:
-                    # print "scale < 10"
-                    thisDistanceRounded = round(SecondDistance, 2)
-
-                elif scale >= 10:
-                    # print "scale >= 10"
-                    thisDistanceRounded = round(SecondDistance, 3)
-
-                else:
-                    thisDistanceRounded = int(round(SecondDistance))
-                    dot = "."
-
-                distanceShowed = str(thisDistanceRounded)+dot
-
+                distanceShowed = formatDistance(SecondDistance,scale)
                 thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointB.x],[resultPoints['onCurve'].y, FirstCrossPointB.y] )
                 drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *secondColor ).set() #bule
                 # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
