@@ -15,16 +15,6 @@ from GlyphsApp.plugins import *
 from GlyphsApp import MOUSEMOVED
 import traceback, objc, itertools, math
 
-def distanceAB(A,B):
-    sqA = (B.x - A.x) **2
-    sqB = (B.y - A.y) **2
-    sqC = sqA + sqB
-    if sqC > 0:
-        lengthAB = math.sqrt(sqC)
-        return lengthAB
-    else:
-        return 0
-
 def pathAB(t,Wx,Wy):
     summaX = Wx[0] + t*(Wx[1] - Wx[0])
     summaY = Wy[0] + t*(Wy[1] - Wy[0])
@@ -102,7 +92,7 @@ class StemThickness(ReporterPlugin):
         myPointsSize = HandleSize - HandleSize / 8
         zoomedMyPoints = myPointsSize / scale
 
-        if distanceAB(crossHairCenter,resultPoints['onCurve']) <= 35/scale:
+        if distance(crossHairCenter,resultPoints['onCurve']) <= 35/scale:
 
             self.drawPoint(resultPoints['onCurve'], zoomedMyPoints)
             # returns list of intersections
@@ -198,22 +188,16 @@ class StemThickness(ReporterPlugin):
             NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
             fontColor = NSColor.whiteColor()
 
-            FirstDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointA )
-            
+            FirstDistance = distance( resultPoints['onCurve'], FirstCrossPointA )
 
             firstDraws  = False
             secondDraws = False
-            # blue = ( 0.2, 0.0, 0.9, 1 )
-            # red  =  (0.9, 0.0, 0.2, 1)
-            # blue = ( 0.76, 0.75, 0.75, 1 ) # actually it is a grey color, I used blue and red for debuging
-            # red  = ( 0.76, 0.75, 0.75, 1 )
             red  =  (0.96, 0.44, 0.44, 1)
             blue = ( 0.65, 0.63, 0.94, 1 )
             dot = ""
             if FirstDistance < 1199:
                 # sets colors
                 firstDraws = True
-
                 firstColor = blue
                 
                 # calculates how value of thickness will be shown
@@ -246,7 +230,7 @@ class StemThickness(ReporterPlugin):
                 self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color = firstColor)
                 self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75, color = firstColor)
             
-            SecondDistance = distanceAB( resultPoints['onCurve'], FirstCrossPointB )
+            SecondDistance = distance( resultPoints['onCurve'], FirstCrossPointB )
             if SecondDistance < 1199:
                 secondDraws = True
                 secondColor = blue
