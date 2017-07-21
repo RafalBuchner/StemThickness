@@ -97,8 +97,6 @@ class StemThickness(ReporterPlugin):
         scale = self.getScale() # scale of edit window
         layer = Glyphs.font.selectedLayers[0]
 
-        resultPoints  = NSPoint(-1,-1)
-
         #r eturns closest point on curve to crossHairCenter
         resultPoints = self.calcClosestPtOnCurveAndTangent(layer, crossHairCenter,scale)
         # print "resultPoints", resultPoints
