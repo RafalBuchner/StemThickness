@@ -113,18 +113,13 @@ class StemThickness(ReporterPlugin):
             # returns list of intersections
             crossPoints = layer.intersectionsBetweenPoints( resultPoints['onCurve'],resultPoints['normal'])
             MINUScrossPoints = layer.intersectionsBetweenPoints( resultPoints['onCurve'],resultPoints['minusNormal'])
-            
             segment = self.getCurrSegment(layer,crossHairCenter)
 
             if len(segment) == 4: # curves
                 MINUScrossPoints.reverse()
                 i = -2
                 n = -2
-                
-                # print "c"
-            
             else: # lines
-                
                 allCurrPoints_x = []
                 allCurrPoints_y = []
                 for path in layer.paths:
@@ -132,38 +127,27 @@ class StemThickness(ReporterPlugin):
                         allCurrPoints_x.append(node.x)
                         allCurrPoints_y.append(node.y)
 
-
                 if segment[0].y == segment[1].y and segment[0].y != min(allCurrPoints_y) and segment[0].y != max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL
-                    
                     crossPoints.reverse()
                     del crossPoints[-1]
                     del MINUScrossPoints[-1]
                     i = -2
                     n = -2
-                    
-
-
                 elif segment[0].y == segment[1].y and segment[0].y == min(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the lowest level
                     # print "LOW LEVEL"
                     MINUScrossPoints.reverse()
                     crossPoints.reverse()
                     del crossPoints[-1]
-
                     i = -2
                     n = 1 
-                    
-
-
                 elif segment[0].y == segment[1].y and segment[0].y == max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the highest level
                     # print "HIGHT LEVEL"
                     MINUScrossPoints.reverse()
                     crossPoints.reverse()
                     del crossPoints[-1]
                     del MINUScrossPoints[-1]
-                    
                     i = 0
                     n = 2
-                    
                 elif segment[0].x == max(allCurrPoints_x) and segment[1].x == max(allCurrPoints_x): # for lines extreme right vertival lines
                     # print "RIGHT LEVEL"
                     crossPoints.reverse()
@@ -172,30 +156,21 @@ class StemThickness(ReporterPlugin):
 
                 elif segment[0].x == segment[1].x and segment[1].x == min(allCurrPoints_x): # for lines extreme left vertival lines
                     # print "LEFT LEVEL"
-                    
                     i = 0
                     n = 2
 
                 elif segment[0].x != segment[1].x and segment[0].y != segment[1].y: 
                     # print "DIAGONAl"
                     del crossPoints[-1]
-                    
-                    
                     i = -2
                     n = 2
 
                 elif segment[0].x == segment[1].x and segment[1].x != min(allCurrPoints_x) or segment[1].x != max(allCurrPoints_x):
                     # print "STRAIGHT"
                     del crossPoints[-1]
-                    
-                    
                     i = -2
                     n = 2
 
-            # print "   c:\n%s"%MINUScrossPoints    ###TEST
-            # print "BLUE_i:%s, RED_n:%s"%(i,n)     ###TEST
-            # print "   c%s"%crossPoints[i]         ###TEST
-            # print "minc%s"%MINUScrossPoints[n]    ###TEST
             FirstCrossPointA = NSPoint(crossPoints[i].x,crossPoints[i].y)           #blue
             FirstCrossPointB = NSPoint(MINUScrossPoints[n].x,MINUScrossPoints[n].y) #red
 
