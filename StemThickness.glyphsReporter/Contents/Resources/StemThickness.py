@@ -212,33 +212,28 @@ class StemThickness(ReporterPlugin):
             if FirstDistance < 1199:
                 # sets colors
                 firstDraws = True
-                firstColor = blue
-                distanceShowed = formatDistance(FirstDistance,scale)
-                thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointA.x],[resultPoints['onCurve'].y, FirstCrossPointA.y] )
-                drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *firstColor ).set() #bule
-                # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointA ) ### 1
-                self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointA )
-                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color = firstColor)
-                self.drawPoint(FirstCrossPointA, zoomedMyPoints*0.75, color = firstColor)
-            
+                self.showDistance(FirstDistance, FirstCrossPointA, resultPoints['onCurve'], blue)
             SecondDistance = distance( resultPoints['onCurve'], FirstCrossPointB )
             if SecondDistance < 1199:
                 secondColor = blue
-
                 if firstDraws == True:
                     secondColor = red
-                distanceShowed = formatDistance(SecondDistance,scale)
-                thisDistanceCenter = pathAB(0.5, [resultPoints['onCurve'].x, FirstCrossPointB.x],[resultPoints['onCurve'].y, FirstCrossPointB.y] )
-                drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *secondColor ).set() #bule
-                # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], FirstCrossPointB ) ### 1
-                self.drawDashedStrokeAB( resultPoints['onCurve'], FirstCrossPointB )
-                self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color =secondColor )
-                self.drawPoint(FirstCrossPointB, zoomedMyPoints*0.75, color = secondColor)
-            
-            
-                        
+                self.showDistance(SecondDistance, FirstCrossPointB, resultPoints['onCurve'], secondColor)
+
             if FirstCrossPointA == resultPoints['onCurve'] or FirstCrossPointA == resultPoints['onCurve']:
                 print "ERROR: crossPoint == ON CURVE POINT!!!!"
+
+    def showDistance(self, d, cross, onCurve, color):
+        scale = self.getScale() # scale of edit window
+        HandleSize = self.getHandleSize()
+        myPointsSize = HandleSize - HandleSize / 8
+        zoomedMyPoints = myPointsSize / scale
+        distanceShowed = formatDistance(d,scale)
+        thisDistanceCenter = pathAB(0.5, [onCurve.x, cross.x],[onCurve.y, cross.y] )
+        NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set()
+        self.drawDashedStrokeAB( onCurve, cross )
+        self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color = color)
+        self.drawPoint(cross, zoomedMyPoints*0.75, color = color)
 
     def mouseDidMove(self, notification):
         self.controller.view().setNeedsDisplay_(True)
