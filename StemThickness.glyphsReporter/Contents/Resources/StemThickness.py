@@ -172,21 +172,18 @@ class StemThickness(ReporterPlugin):
             FirstCrossPointA = NSPoint(crossPoints[i].x,crossPoints[i].y)           #blue
             FirstCrossPointB = NSPoint(MINUScrossPoints[n].x,MINUScrossPoints[n].y) #red
 
+            FirstDistance  = distance( resultPoints['onCurve'], FirstCrossPointA )
+            SecondDistance = distance( resultPoints['onCurve'], FirstCrossPointB )
+
             # drawsLine between points on curve
             NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
-            fontColor = NSColor.whiteColor()
-
-            FirstDistance = distance( resultPoints['onCurve'], FirstCrossPointA )
 
             firstDraws  = False
             red  =  (0.96, 0.44, 0.44, 1)
             blue = ( 0.65, 0.63, 0.94, 1 )
-            dot = ""
             if FirstDistance < 1199:
-                # sets colors
                 firstDraws = True
                 self.showDistance(FirstDistance, FirstCrossPointA, resultPoints['onCurve'], blue)
-            SecondDistance = distance( resultPoints['onCurve'], FirstCrossPointB )
             if SecondDistance < 1199:
                 secondColor = blue
                 if firstDraws == True:
