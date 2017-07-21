@@ -45,100 +45,11 @@ def pathAB(t,Wx,Wy):
     T = NSPoint(summaX,summaY)
     return T
 
-def getLut(segment, scale):
-    # creates very big list of t-ratio values 't' and coordinates 'T' of every segment in active glyph window
-    listOf_T   = []
-    listOf_t = []
-    dictOf_T_and_t_ratio = {'t' : listOf_t, 'T' : listOf_T}
-
-    # divides segment into several t-points, calculate its coordinates and values and lists it in "listOf_T" and listoOf_t-ratio lists
-    if len(segment) == 4: # for curves
-        first = segment[0]
-        last  = segment[3]
-        lenthFirstToLast = distanceAB(first,last)
-        # ratio = 1/(lenthFirstToLast/3)
-        if scale == 1:
-            ratio = 1/(lenthFirstToLast/3)
-        else:
-            ratio = 1/(scale*(round(lenthFirstToLast)/5))
-
-        t = 0
-        while t <= 1:
-
-            T = bezierCurve(t,[segment[0].x,segment[1].x,segment[2].x,segment[3].x],[segment[0].y,segment[1].y,segment[2].y,segment[3].y])
-            listOf_T.append(T)
-            listOf_t.append(t)
-            t += ratio
-
-    elif len(segment) == 2: # for line
-        first = segment[0]
-        last  = segment[1]
-        lenthFirstToLast = distanceAB(first,last)
-        # ratio = 1/(lenthFirstToLast/3)
-        if scale == 1:
-            ratio = 1/(lenthFirstToLast/3)
-        else:
-            ratio = 1/(scale*(round(lenthFirstToLast)/5))
-
-        t = 0
-        while t <= 1:
-
-            T = pathAB(t,[segment[0].x,segment[1].x],[segment[0].y,segment[1].y])
-            listOf_T.append(T)
-            listOf_t.append(t)
-            t += ratio
-
-    else:
-        print "getLut(): ERROR"
-
-    return dictOf_T_and_t_ratio
-
-def closest (LUT, pointOffCurve):
-    minimalDist = 10000
-    position = -1
-    distance = 0
-    for n in range(len(LUT)):
-        distance = distanceAB(pointOffCurve, LUT[n])
-
-        if distance < minimalDist:
-            minimalDist = distance
-            position = n
-
-    if position == -1:
-        print "closest(): ERROR"
-        return None
-
-    return LUT[position]
-
 def calcTangent(t,segment):
-    #print "__calcTangent", t, segment
     # calculates reference Tangent Point (from its coordinates plugin will be able to get tangent's direction)
-
-    # interpolation points based on de Casteljau's algorithm (coordinates are interpolations between control points and interpolation points)
     if len(segment) == 4: # for curves
         divided = divideCurve(segment[0], segment[1], segment[2], segment[3], t)
-        # Q01 = NSPoint(
-        #            pathAB(t,[segment[0].x,segment[1].x],[segment[0].y,segment[1].y]).x,
-        #            pathAB(t,[segment[0].x,segment[1].x],[segment[0].y,segment[1].y]).y,
-        #            )
-        #
-        # Q12 = NSPoint(
-        #            pathAB(t,[segment[1].x,segment[2].x],[segment[1].y,segment[2].y]).x,
-        #            pathAB(t,[segment[1].x,segment[2].x],[segment[1].y,segment[2].y]).y,
-        #            )
-        #
-        # Q23 = NSPoint(
-        #            pathAB(t,[segment[2].x,segment[3].x],[segment[2].y,segment[3].y]).x,
-        #            pathAB(t,[segment[2].x,segment[3].x],[segment[2].y,segment[3].y]).y,
-        #            )
-        #
-        #
-        # R2  = NSPoint(
-        #            pathAB(t,[Q12.x,Q23.x],[Q12.y,Q23.y]).x,
-        #            pathAB(t,[Q12.x,Q23.x],[Q12.y,Q23.y]).y,
-        #            )
         R2 = divided[4]
-        
     elif len(segment) == 2: # for line
         R2 = segment[1]
     
