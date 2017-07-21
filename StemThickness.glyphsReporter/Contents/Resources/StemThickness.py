@@ -25,19 +25,6 @@ def distanceAB(A,B):
     else:
         return 0
 
-def bezierCurve(t,Wx,Wy):
-
-    t2 = t * t
-    t3 = t2 * t
-    mt = 1-t
-    mt2 = mt * mt
-    mt3 = mt2 * mt
-    summaX = Wx[0]*mt3 + 3*Wx[1]*mt2*t + 3*Wx[2]*mt*t2 + Wx[3]*t3
-    summaY = Wy[0]*mt3 + 3*Wy[1]*mt2*t + 3*Wy[2]*mt*t2 + Wy[3]*t3
-
-    T = NSPoint(summaX,summaY)
-    return T
-
 def pathAB(t,Wx,Wy):
     summaX = Wx[0] + t*(Wx[1] - Wx[0])
     summaY = Wy[0] + t*(Wy[1] - Wy[0])
@@ -302,21 +289,6 @@ class StemThickness(ReporterPlugin):
             if FirstCrossPointA == resultPoints['onCurve'] or FirstCrossPointA == resultPoints['onCurve']:
                 print "ERROR: crossPoint == ON CURVE POINT!!!!"
 
-            ###############TEST NORMALS#################
-            # drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *blue ).set() #bule
-            # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], resultPoints['normal'] ) ### TEST
-            # drawingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( *red ).set() #bule
-            # NSBezierPath.strokeLineFromPoint_toPoint_( resultPoints['onCurve'], resultPoints['minusNormal'] ) ### TEST
-            
-            ###INTERSECTION TEST:
-            # testIn = self.intersectABwithEditView(resultPoints['onCurve'],FirstCrossPointA,scale)
-            # print testIn
-            # # self.intersectABwithEditView(resultPoints['onCurve'],FirstCrossPointB,scale)
-            # editTabGraphicView = self.controller.graphicView()
-            # visibleRect = editTabGraphicView.visibleRect()
-            # print visibleRect
-
-
     def mouseDidMove(self, notification):
         self.controller.view().setNeedsDisplay_(True)
 
@@ -471,56 +443,3 @@ class StemThickness(ReporterPlugin):
             return segment
         except:
             print traceback.format_exc()
-    # def intersectABwithEditView(self,A,B,scale):
-    #     try:
-    #         A.x = A.x / scale
-    #         A.y = A.y / scale
-    #         B.x = B.x / scale
-    #         B.y = B.y / scale
-
-    #         # scale = getScale()
-    #         myGraphicView = self.controller.graphicView()
-    #         EditView = myGraphicView.visibleRect()
-    #         EditView.origin.x = EditView.origin.x
-    #         EditView.origin.y = EditView.origin.y
-    #         # EditView.width = EditView.size.width * scale
-    #         # EditView.height = EditView.size.height * scale
-
-    #         # Top left corner of the screen
-    #         TL   = GSNode(0,0)
-    #         TL.x = EditView.origin.x
-    #         TL.y = EditView.origin.y + EditView.size.height
-
-    #         # Top right corner of the screen
-    #         TR   = GSNode(0,0)
-    #         TR.x = EditView.origin.x + EditView.size.width
-    #         TR.y = EditView.origin.y + EditView.size.height
-
-    #         # Bottom right corner of the screen
-    #         BR   = GSNode(0,0)
-        #     BR.x = EditView.origin.x + EditView.size.width
-        #     BR.y = EditView.origin.y
-
-        #     # bottom left corner of the screen
-        #     BL   = GSNode(0,0)
-        #     BL.x = EditView.origin.x
-        #     BL.y = EditView.origin.y
-        #     myPath = GSPath()
-        #     myNodes = myPath.nodes
-        #     # print "###############"
-        #     myNodes.append(TL)
-        #     myNodes.append(TR)
-        #     myNodes.append(BR)
-        #     myNodes.append(BL)
-        #     myLayer = GSLayer()
-        #     myLayerPaths = myLayer.paths
-        #     myLayer.paths.append(myPath)
-        #     cross = myLayer.intersectionsBetweenPoints(A,B)
-
-        #     # print (TL:%s BR:%s)%(TL,BR)
-        #     return cross
-        # except:
-        #     print traceback.format_exc()
-        
-
-
