@@ -206,7 +206,6 @@ class StemThickness(ReporterPlugin):
             FirstDistance = distance( resultPoints['onCurve'], FirstCrossPointA )
 
             firstDraws  = False
-            secondDraws = False
             red  =  (0.96, 0.44, 0.44, 1)
             blue = ( 0.65, 0.63, 0.94, 1 )
             dot = ""
@@ -224,7 +223,6 @@ class StemThickness(ReporterPlugin):
             
             SecondDistance = distance( resultPoints['onCurve'], FirstCrossPointB )
             if SecondDistance < 1199:
-                secondDraws = True
                 secondColor = blue
 
                 if firstDraws == True:
