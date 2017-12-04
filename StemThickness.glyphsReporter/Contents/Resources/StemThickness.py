@@ -98,7 +98,7 @@ class StemThickness(ReporterPlugin):
         layer = Glyphs.font.selectedLayers[0]
 
         closestData = self.calcClosestInfo(layer, crossHairCenter)
-        if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
+        if not closestData or distance(crossHairCenter,closestData['onCurve']) > 35/scale:
             return
 
         self.drawCrossingsForData(closestData)
@@ -113,6 +113,8 @@ class StemThickness(ReporterPlugin):
         self.drawPoint(closestData['onCurve'], zoomedMyPoints)
         # returns list of intersections
         crossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['normal'])
+        if len(crossPoints) < 1:
+            return
         MINUScrossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['minusNormal'])
         segment = closestData["segment"]
 
@@ -193,8 +195,8 @@ class StemThickness(ReporterPlugin):
                 secondColor = red
             self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
 
-        if FirstCrossPointA == closestData['onCurve'] or FirstCrossPointA == closestData['onCurve']:
-            print "ERROR: crossPoint == ON CURVE POINT!!!!"
+        # if FirstCrossPointA == closestData['onCurve'] or FirstCrossPointA == closestData['onCurve']:
+            # print "ERROR: crossPoint == ON CURVE POINT!!!!"
 
     def showDistance(self, d, cross, onCurve, color):
         scale = self.getScale() # scale of edit window
@@ -209,7 +211,8 @@ class StemThickness(ReporterPlugin):
         self.drawPoint(cross, zoomedMyPoints*0.75, color = color)
 
     def mouseDidMove(self, notification):
-        self.controller.view().setNeedsDisplay_(True)
+        if self.controller:
+            self.controller.view().setNeedsDisplay_(True)
 
     def willActivate(self):
         Glyphs.addCallback(self.mouseDidMove, MOUSEMOVED)
@@ -259,8 +262,12 @@ class StemThickness(ReporterPlugin):
                 closestPathTime = currPathTime
                 closestPath = path
 
+        if not closestPathTime:
+            return
         n = math.floor(closestPathTime)
         OnNode = closestPath.nodes[n]
+        if not OnNode:
+            return
         if OnNode.type == CURVE:
             segment = (closestPath.nodes[n - 3].position, closestPath.nodes[n - 2].position, closestPath.nodes[n - 1].position, OnNode.position)
         else:
