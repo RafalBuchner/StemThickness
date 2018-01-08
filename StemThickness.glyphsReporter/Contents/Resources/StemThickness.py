@@ -12,7 +12,7 @@
 ###########################################################################################################
 
 from GlyphsApp.plugins import *
-from GlyphsApp import MOUSEMOVED
+from GlyphsApp import CURVE, MOUSEMOVED, distance
 import traceback, objc, itertools, math
 
 def pathAB(t,Wx,Wy):
