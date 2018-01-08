@@ -209,7 +209,8 @@ class StemThickness(ReporterPlugin):
         self.drawPoint(cross, zoomedMyPoints*0.75, color = color)
 
     def mouseDidMove(self, notification):
-        self.controller.view().setNeedsDisplay_(True)
+        if self.controller:
+            self.controller.redraw()
 
     def willActivate(self):
         Glyphs.addCallback(self.mouseDidMove, MOUSEMOVED)
