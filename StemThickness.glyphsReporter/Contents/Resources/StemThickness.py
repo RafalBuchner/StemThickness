@@ -95,7 +95,6 @@ class StemThickness(ReporterPlugin):
         view = self.controller.graphicView()
         crossHairCenter = view.getActiveLocation_(Glyphs.currentEvent())
         scale = self.getScale() # scale of edit window
-        layer = Glyphs.font.selectedLayers[0]
 
         closestData = self.calcClosestInfo(layer, crossHairCenter)
         if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
