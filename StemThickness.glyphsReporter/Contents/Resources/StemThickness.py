@@ -12,7 +12,7 @@
 ###########################################################################################################
 
 from GlyphsApp.plugins import *
-from GlyphsApp import MOUSEMOVED
+from GlyphsApp import CURVE, MOUSEMOVED, distance
 import traceback, objc, itertools, math
 
 def pathAB(t,Wx,Wy):
@@ -209,7 +209,8 @@ class StemThickness(ReporterPlugin):
         self.drawPoint(cross, zoomedMyPoints*0.75, color = color)
 
     def mouseDidMove(self, notification):
-        self.controller.view().setNeedsDisplay_(True)
+        if self.controller:
+            self.controller.redraw()
 
     def willActivate(self):
         Glyphs.addCallback(self.mouseDidMove, MOUSEMOVED)
