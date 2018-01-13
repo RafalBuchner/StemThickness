@@ -94,6 +94,8 @@ class StemThickness(ReporterPlugin):
         scale = self.getScale() # scale of edit window
 
         closestData = self.calcClosestInfo(layer, crossHairCenter)
+        if closestData is None:
+            return
         if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
             self.lastNodePair = None
             return
@@ -259,7 +261,8 @@ class StemThickness(ReporterPlugin):
                 closestPoint = currClosestPoint
                 closestPathTime = currPathTime
                 closestPath = path
-
+        if closestPathTime is None:
+            return None
         n = math.floor(closestPathTime)
         OnNode = closestPath.nodes[n]
         if OnNode.type == CURVE:
