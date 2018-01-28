@@ -12,7 +12,7 @@
 ###########################################################################################################
 
 from GlyphsApp.plugins import *
-from GlyphsApp import CURVE, MOUSEMOVED, distance, divideCurve
+from GlyphsApp import CURVE, MOUSEMOVED, distance, divideCurve, GSGuideLine
 import traceback, objc, itertools, math
 
 def pathAB(t,Wx,Wy):
@@ -61,24 +61,21 @@ def rotatePoint( P,angle, originPoint):
 
 def formatDistance(d, scale):
     # calculates how value of thickness will be shown
-    dot = ""
-    roundedDistance = 0
     if scale < 2:
-        roundedDistance = int(round(d))
-        dot = "."
+        return "%i" % round(d)
+        # return "%i." % round(d) # use this instead if you really want the dot at the end, but I don't understand why --mekkablue
     elif scale < 3:
-        roundedDistance = round(d, 1)
+        return "%0.1f" % d
     elif scale < 10:
-        roundedDistance = round(d, 2)
+        return "%0.2f" % d
     elif scale >= 10:
-        roundedDistance = round(d, 3)
-    return str(roundedDistance) + dot
+        return "%0.3f" % d
 
 class StemThickness(ReporterPlugin):
-
+    lastNodePair = None
+    
     def settings(self):
         self.menuName = 'Stem Thickness'
-
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
 
@@ -98,6 +95,7 @@ class StemThickness(ReporterPlugin):
 
         closestData = self.calcClosestInfo(layer, crossHairCenter)
         if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
+            self.lastNodePair = None
             return
 
         self.drawCrossingsForData(closestData)
@@ -196,6 +194,7 @@ class StemThickness(ReporterPlugin):
             print "ERROR: crossPoint == ON CURVE POINT!!!!"
 
     def showDistance(self, d, cross, onCurve, color):
+        self.lastNodePair = (cross, onCurve)
         scale = self.getScale() # scale of edit window
         HandleSize = self.getHandleSize()
         myPointsSize = HandleSize - HandleSize / 8
@@ -217,6 +216,7 @@ class StemThickness(ReporterPlugin):
     def willDeactivate(self):
         try:
             Glyphs.removeCallback(self.mouseDidMove, MOUSEMOVED)
+            self.lastNodePair = None
         except:
             NSLog(traceback.format_exc())
 
@@ -237,6 +237,7 @@ class StemThickness(ReporterPlugin):
         """
         myRect = NSRect( ( thisPoint.x - markerWidth * 0.5, thisPoint.y - markerWidth * 0.5 ), ( markerWidth, markerWidth ) )
         return NSBezierPath.bezierPathWithOvalInRect_(myRect)
+
     def drawDashedStrokeAB(self,A,B):
         bez = NSBezierPath.bezierPath()
         bez.setLineWidth_(0)
@@ -313,28 +314,29 @@ class StemThickness(ReporterPlugin):
         NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).fill()
         NSColor.colorWithCalibratedRed_green_blue_alpha_( 0,0,0,0.1 ).set()
         NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).stroke()
-        self.drawTextAtPoint(thisString, center, fontsize )
+        self.drawTextAtPoint(thisString, center, fontsize, align="center" )
+
     def drawTextAtPoint(self, text, textPosition, fontSize=10.0, fontColor=NSColor.blackColor(), align='center'):
         """
         custom drawTextAtPoint() by Mark.
         """
         try:
-            
+
             alignment = {
-                'topleft': 6, 
-                'topcenter': 7, 
+                'topleft': 6,
+                'topcenter': 7,
                 'topright': 8,
-                'left': 3, 
-                'center': 4, 
-                'right': 5, 
-                'bottomleft': 0, 
-                'bottomcenter': 1, 
+                'left': 3,
+                'center': 4,
+                'right': 5,
+                'bottomleft': 0,
+                'bottomcenter': 1,
                 'bottomright': 2
                 }
-            
+
             glyphEditView = self.controller.graphicView()
             currentZoom = self.getScale()
-            fontAttributes = { 
+            fontAttributes = {
                 NSFontAttributeName: NSFont.labelFontOfSize_(fontSize/currentZoom),
 
                 # NSForegroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 1, 1, 1, 1 ), # fontColor, original
@@ -347,3 +349,31 @@ class StemThickness(ReporterPlugin):
         except:
             self.logError(traceback.format_exc())
 
+    def conditionalContextMenus(self):
+        contextMenus = []
+        if not self.lastNodePair is None:
+            contextMenus.append({
+                    'name': "Add Guide for Measurement", 
+                    'action': self.addGuideForMeasurement
+                })
+        return contextMenus
+
+    def addGuideForMeasurement(self):
+        try:
+            currentLayer = Glyphs.font.selectedLayers[0]
+            node1 = self.lastNodePair[0]
+            node2 = self.lastNodePair[1]
+            guideKnobPosition = NSPoint(
+                (node1.x+node2.x)*0.5,
+                (node1.y+node2.y)*0.5,
+            )
+            guideAngle = angle(node1,node2)
+            newGuide = GSGuideLine()
+            newGuide.position = guideKnobPosition
+            newGuide.angle = math.degrees(guideAngle)
+            newGuide.setShowMeasurement_(True)
+            currentLayer.guides.append(newGuide)
+        except Exception as e:
+            print e
+            import traceback
+            print traceback.format_exc()
