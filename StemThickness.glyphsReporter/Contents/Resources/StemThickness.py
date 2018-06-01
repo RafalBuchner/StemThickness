@@ -78,6 +78,7 @@ class StemThickness(ReporterPlugin):
         self.menuName = 'Stem Thickness'
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
+        self.controller = None
 
     def _foreground(self, layer):
         try:
