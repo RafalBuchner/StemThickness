@@ -78,6 +78,7 @@ class StemThickness(ReporterPlugin):
         self.menuName = 'Stem Thickness'
         self.keyboardShortcut = 'a'
         self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
+        self.controller = None
 
     def _foreground(self, layer):
         try:
@@ -94,6 +95,8 @@ class StemThickness(ReporterPlugin):
         scale = self.getScale() # scale of edit window
 
         closestData = self.calcClosestInfo(layer, crossHairCenter)
+        if closestData is None:
+            return
         if distance(crossHairCenter,closestData['onCurve']) > 35/scale:
             self.lastNodePair = None
             return
@@ -259,7 +262,8 @@ class StemThickness(ReporterPlugin):
                 closestPoint = currClosestPoint
                 closestPathTime = currPathTime
                 closestPath = path
-
+        if closestPathTime is None:
+            return None
         n = math.floor(closestPathTime)
         OnNode = closestPath.nodes[n]
         if OnNode.type == CURVE:
