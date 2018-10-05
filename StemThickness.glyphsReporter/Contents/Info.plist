@@ -32,7 +32,7 @@
 	<string>StemThickness</string>
 	<key>PyMainFileNames</key>
 	<array>
-		<string>__boot__</string>
+		<string>../MacOS/main.py</string>
 	</array>
 </dict>
 </plist>
