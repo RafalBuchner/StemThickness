@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleVersion</key>
-	<string>22</string>
+	<string>23</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2</string>
+	<string>1.2.1</string>
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/RafalBuchner/StemThickness/master/StemThickness.glyphsReporter/Contents/Info.plist</string>
 	<key>productPageURL</key>
@@ -32,7 +32,7 @@
 	<string>StemThickness</string>
 	<key>PyMainFileNames</key>
 	<array>
-		<string>__boot__</string>
+		<string>../MacOS/main.py</string>
 	</array>
 </dict>
 </plist>
