@@ -193,9 +193,6 @@ class StemThickness(ReporterPlugin):
                 secondColor = red
             self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
 
-        if FirstCrossPointA == closestData['onCurve'] or FirstCrossPointA == closestData['onCurve']:
-            print "ERROR: crossPoint == ON CURVE POINT!!!!"
-
     def showDistance(self, d, cross, onCurve, color):
         self.lastNodePair = (cross, onCurve)
         scale = self.getScale() # scale of edit window
