@@ -266,6 +266,8 @@ class StemThickness(ReporterPlugin):
             return None
         n = math.floor(closestPathTime)
         OnNode = closestPath.nodes[n]
+        if not OnNode:
+            return None
         if OnNode.type == CURVE:
             segment = (closestPath.nodes[n - 3].position, closestPath.nodes[n - 2].position, closestPath.nodes[n - 1].position, OnNode.position)
         else:
