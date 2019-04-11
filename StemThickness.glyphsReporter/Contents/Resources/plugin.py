@@ -268,7 +268,11 @@ class StemThickness(ReporterPlugin):
         if OnNode.type == CURVE:
             segment = (closestPath.nodes[n - 3].position, closestPath.nodes[n - 2].position, closestPath.nodes[n - 1].position, OnNode.position)
         else:
-            segment = (closestPath.nodes[n - 1].position, OnNode.position)
+            prevPoint = closestPath.nodes[n - 1]
+            if prevPoint:
+                segment = (prevPoint.position, OnNode.position)
+            else:
+                return
 
         TangentDirection = calcTangent(closestPathTime % 1, segment)
         directionAngle = angle(closestPoint,TangentDirection)
