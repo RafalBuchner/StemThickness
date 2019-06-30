@@ -176,7 +176,7 @@ class StemThickness(ReporterPlugin):
         SecondDistance = distance( closestData['onCurve'], FirstCrossPointB )
 
         # drawsLine between points on curve
-        NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
+        # NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
 
         firstDraws  = False
         red  =  (0.96, 0.44, 0.44, 1)
@@ -241,7 +241,7 @@ class StemThickness(ReporterPlugin):
     def drawDashedStrokeAB(self,A,B):
         bez = NSBezierPath.bezierPath()
         bez.setLineWidth_(0)
-        bez.setLineDash_count_phase_([2.0,2.0], 2,0)
+        bez.setLineDash_count_phase_((2.0,2.0), 2, 0)
         bez.moveToPoint_(A)
         bez.lineToPoint_(B)
         bez.stroke()
@@ -311,9 +311,11 @@ class StemThickness(ReporterPlugin):
         panel.size = NSSize( width, scaledSize + rim*2 )
         NSColor.colorWithCalibratedRed_green_blue_alpha_( 1,1,1,1 ).set()
         # NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set() # ORGINAL
-        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).fill()
+        roundedRect = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 )
+        roundedRect.fill()
         NSColor.colorWithCalibratedRed_green_blue_alpha_( 0,0,0,0.1 ).set()
-        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).stroke()
+        roundedRect.setLineWidth_(1.0/self.getScale())
+        roundedRect.stroke()
         self.drawTextAtPoint(thisString, center, fontsize, align="center" )
 
     def drawTextAtPoint(self, text, textPosition, fontSize=10.0, fontColor=NSColor.blackColor(), align='center'):
