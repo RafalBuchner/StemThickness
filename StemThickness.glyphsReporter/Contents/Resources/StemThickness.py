@@ -200,7 +200,7 @@ class StemThickness(ReporterPlugin):
         myPointsSize = HandleSize - HandleSize / 8
         zoomedMyPoints = myPointsSize / scale
         distanceShowed = formatDistance(d,scale)
-        thisDistanceCenter = pathAB(0.5, [onCurve.x, cross.x],[onCurve.y, cross.y] )
+        thisDistanceCenter = pathAB(0.5, (onCurve.x, cross.x), (onCurve.y, cross.y) )
         NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set()
         self.drawDashedStrokeAB( onCurve, cross )
         self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color = color)
