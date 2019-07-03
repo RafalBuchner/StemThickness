@@ -17,15 +17,15 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleVersion</key>
-	<string>23</string>
+	<string>24</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2.1</string>
+	<string>1.2.2</string>
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/RafalBuchner/StemThickness/master/StemThickness.glyphsReporter/Contents/Info.plist</string>
 	<key>productPageURL</key>
 	<string>https://github.com/RafalBuchner/StemThickness</string>
 	<key>productReleaseNotes</key>
-	<string>New: context menu item for converting measurement into a guide (thx @mekkablue)</string>
+	<string>Fix #21: avoid default line width</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright, Rafał Buchner, 2016</string>
 	<key>NSPrincipalClass</key>
