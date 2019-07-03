@@ -382,6 +382,9 @@ class StemThickness(ReporterPlugin):
             newGuide.angle = math.degrees(guideAngle)
             newGuide.setShowMeasurement_(True)
             currentLayer.guides.append(newGuide)
+            
+            # make sure Show Guides is enabled:
+            Glyphs.defaults["showGuidelines"] = 1
         except Exception as e:
             print e
             import traceback
