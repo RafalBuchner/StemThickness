@@ -179,10 +179,10 @@ class StemThickness(ReporterPlugin):
         SecondDistance = distance( closestData['onCurve'], FirstCrossPointB )
 
         # drawsLine between points on curve
-        NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
+        # NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
 
         firstDraws  = False
-        red  =  (0.96, 0.44, 0.44, 1)
+        red  = ( 0.96, 0.44, 0.44, 1 )
         blue = ( 0.65, 0.63, 0.94, 1 )
         if FirstDistance < 1199:
             firstDraws = True
@@ -200,7 +200,7 @@ class StemThickness(ReporterPlugin):
         myPointsSize = HandleSize - HandleSize / 8
         zoomedMyPoints = myPointsSize / scale
         distanceShowed = formatDistance(d,scale)
-        thisDistanceCenter = pathAB(0.5, [onCurve.x, cross.x],[onCurve.y, cross.y] )
+        thisDistanceCenter = pathAB( 0.5, (onCurve.x, cross.x), (onCurve.y, cross.y) )
         NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set()
         self.drawDashedStrokeAB( onCurve, cross )
         self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, (thisDistanceCenter.x, thisDistanceCenter.y), 8, color = color)
@@ -241,7 +241,7 @@ class StemThickness(ReporterPlugin):
     def drawDashedStrokeAB(self,A,B):
         bez = NSBezierPath.bezierPath()
         bez.setLineWidth_(0)
-        bez.setLineDash_count_phase_([2.0,2.0], 2,0)
+        bez.setLineDash_count_phase_( (2.0,2.0), 2,0)
         bez.moveToPoint_(A)
         bez.lineToPoint_(B)
         bez.stroke()
@@ -318,9 +318,11 @@ class StemThickness(ReporterPlugin):
         panel.size = NSSize( width, scaledSize + rim*2 )
         NSColor.colorWithCalibratedRed_green_blue_alpha_( 1,1,1,1 ).set()
         # NSColor.colorWithCalibratedRed_green_blue_alpha_( *color ).set() # ORGINAL
-        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).fill()
+        roundedRect = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 )
+        roundedRect.fill()
         NSColor.colorWithCalibratedRed_green_blue_alpha_( 0,0,0,0.1 ).set()
-        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( panel, scaledSize*0.5, scaledSize*0.5 ).stroke()
+        roundedRect.setLineWidth_( 1.0/self.getScale() )
+        roundedRect.stroke()
         self.drawTextAtPoint(thisString, center, fontsize, align="center" )
 
     def drawTextAtPoint(self, text, textPosition, fontSize=10.0, fontColor=NSColor.blackColor(), align='center'):
@@ -380,6 +382,9 @@ class StemThickness(ReporterPlugin):
             newGuide.angle = math.degrees(guideAngle)
             newGuide.setShowMeasurement_(True)
             currentLayer.guides.append(newGuide)
+            
+            # make sure Show Guides is enabled:
+            Glyphs.defaults["showGuidelines"] = 1
         except Exception as e:
             print e
             import traceback
