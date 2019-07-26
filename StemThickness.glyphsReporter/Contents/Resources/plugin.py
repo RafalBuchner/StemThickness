@@ -1,24 +1,21 @@
 # encoding: utf-8
 
-###########################################################################################################
-#
+###########################################################################################
 #
 #   Reporter Plugin
 #
 #   Read the docs:
 #   https://github.com/schriftgestalt/GlyphsSDK/tree/master/Python%20Templates/Reporter
 #
-#
-###########################################################################################################
+###########################################################################################
 
 from GlyphsApp.plugins import *
 from GlyphsApp import CURVE, MOUSEMOVED, distance, divideCurve, GSGuideLine
-import traceback, objc, itertools, math
+import objc, math #, itertools
 
 def pathAB(t,Wx,Wy):
     summaX = Wx[0] + t*(Wx[1] - Wx[0])
     summaY = Wy[0] + t*(Wy[1] - Wy[0])
-
     T = NSPoint(summaX,summaY)
     return T
 
@@ -45,11 +42,12 @@ def angle( A, B ):
 
         angle = math.atan( tangens )
         return angle
-    except:
-        print(traceback.format_exc())
+    except Exception as e:
+        print e
+        import traceback
+        print traceback.format_exc()
 
 def rotatePoint( P,angle, originPoint):
-
         """Rotates x/y around x_orig/y_orig by angle and returns result as [x,y]."""
         alfa = math.radians(angle)
 
@@ -75,9 +73,15 @@ class StemThickness(ReporterPlugin):
     lastNodePair = None
     
     def settings(self):
-        self.menuName = 'Stem Thickness'
-        self.keyboardShortcut = 'a'
-        self.keyboardShortcutModifier = NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask
+        self.menuName = Glyphs.localize({
+            'en': u'Stem Thickness',
+            'de': u'Stammstärke',
+            'fr': u'l’épaisseur des traits',
+            'es': u'espesor',
+            'jp': u'ステムの太さ',
+        })
+        self.keyboardShortcut = 's'
+        self.keyboardShortcutModifier = NSControlKeyMask
         self.controller = None
 
     def _foreground(self, layer):
@@ -85,7 +89,9 @@ class StemThickness(ReporterPlugin):
             import cProfile
             cProfile.runctx('self._foreground(layer)', globals(), locals())
             print "**"
-        except:
+        except Exception as e:
+            print e
+            import traceback
             print traceback.format_exc()
         
     def foreground(self, layer):
@@ -111,87 +117,99 @@ class StemThickness(ReporterPlugin):
 
         layer = closestData["layer"]
         self.drawPoint(closestData['onCurve'], zoomedMyPoints)
+        
         # returns list of intersections
         crossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['normal'])
         MINUScrossPoints = layer.intersectionsBetweenPoints( closestData['onCurve'],closestData['minusNormal'])
-        segment = closestData["segment"]
+        
+        if len(crossPoints) > 2 or len(MINUScrossPoints) > 2:
+            segment = closestData["segment"]
 
-        if len(segment) == 4: # curves
-            MINUScrossPoints.reverse()
-            i = -2
-            n = -2
-        else: # lines
-            allCurrPoints_x = []
-            allCurrPoints_y = []
-            for path in layer.paths:
-                for node in path.nodes:
-                    allCurrPoints_x.append(node.x)
-                    allCurrPoints_y.append(node.y)
-
-            if segment[0].y == segment[1].y and segment[0].y != min(allCurrPoints_y) and segment[0].y != max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL
-                crossPoints.reverse()
-                del crossPoints[-1]
-                del MINUScrossPoints[-1]
+            if len(segment) == 4: # curves
+                MINUScrossPoints.reverse()
                 i = -2
                 n = -2
-            elif segment[0].y == segment[1].y and segment[0].y == min(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the lowest level
-                # print "LOW LEVEL"
-                MINUScrossPoints.reverse()
-                crossPoints.reverse()
-                del crossPoints[-1]
-                i = -2
-                n = 1 
-            elif segment[0].y == segment[1].y and segment[0].y == max(allCurrPoints_y): # FOR LINES THAT ARE HORIZONTAL and stays at the highest level
-                # print "HIGHT LEVEL"
-                MINUScrossPoints.reverse()
-                crossPoints.reverse()
-                del crossPoints[-1]
-                del MINUScrossPoints[-1]
-                i = 0
-                n = 2
-            elif segment[0].x == max(allCurrPoints_x) and segment[1].x == max(allCurrPoints_x): # for lines extreme right vertival lines
-                # print "RIGHT LEVEL"
-                crossPoints.reverse()
-                i = 2
-                n = 1
+            else: # lines
+                allCurrPoints_x = []
+                allCurrPoints_y = []
+                for path in layer.paths:
+                    for node in path.nodes:
+                        allCurrPoints_x.append(node.x)
+                        allCurrPoints_y.append(node.y)
 
-            elif segment[0].x == segment[1].x and segment[1].x == min(allCurrPoints_x): # for lines extreme left vertival lines
-                # print "LEFT LEVEL"
-                i = 0
-                n = 2
+                if segment[0].y == segment[1].y and segment[0].y != min(allCurrPoints_y) and segment[0].y != max(allCurrPoints_y): 
+                    # FOR LINES THAT ARE HORIZONTAL
+                    case = "HORIZONTAL"
+                    crossPoints.reverse()
+                    del crossPoints[-1]
+                    del MINUScrossPoints[-1]
+                    i = -2
+                    n = -2
+                elif segment[0].y == segment[1].y and segment[0].y == min(allCurrPoints_y): 
+                    # FOR LINES THAT ARE HORIZONTAL and stays at the lowest level
+                    case = "LOW LEVEL"
+                    MINUScrossPoints.reverse()
+                    crossPoints.reverse()
+                    del crossPoints[-1]
+                    i = -2
+                    n = 1 
+                elif segment[0].y == segment[1].y and segment[0].y == max(allCurrPoints_y): 
+                    # FOR LINES THAT ARE HORIZONTAL and stays at the highest level
+                    case = "HIGH LEVEL"
+                    MINUScrossPoints.reverse()
+                    crossPoints.reverse()
+                    del crossPoints[-1]
+                    del MINUScrossPoints[-1]
+                    i = 0
+                    n = 2
+                elif segment[0].x == max(allCurrPoints_x) and segment[1].x == max(allCurrPoints_x): 
+                    # for lines extreme right vertical lines
+                    case = "RIGHT LEVEL"
+                    crossPoints.reverse()
+                    i = 2
+                    n = 1
+                elif segment[0].x == segment[1].x and segment[1].x == min(allCurrPoints_x): 
+                    # for lines extreme left vertical lines
+                    case = "LEFT LEVEL"
+                    i = 0
+                    n = 2
+                elif segment[0].x != segment[1].x and segment[0].y != segment[1].y: 
+                    case = "DIAGONAL"
+                    del crossPoints[-1]
+                    i = -2
+                    n = 2 % len(MINUScrossPoints) # avoid out of range in blunt corners
+                elif segment[0].x == segment[1].x and segment[1].x != min(allCurrPoints_x) or segment[1].x != max(allCurrPoints_x):
+                    case = "STRAIGHT"
+                    del crossPoints[-1]
+                    i = -2
+                    n = 2
+        
+            try:
+                FirstCrossPointA = NSPoint(crossPoints[i].x,crossPoints[i].y)           #blue
+                FirstDistance  = distance( closestData['onCurve'], FirstCrossPointA )
+                FirstCrossPointB = NSPoint(MINUScrossPoints[n].x,MINUScrossPoints[n].y) #red
+                SecondDistance = distance( closestData['onCurve'], FirstCrossPointB )
 
-            elif segment[0].x != segment[1].x and segment[0].y != segment[1].y: 
-                # print "DIAGONAl"
-                del crossPoints[-1]
-                i = -2
-                n = 2
+                # drawsLine between points on curve
+                # NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
 
-            elif segment[0].x == segment[1].x and segment[1].x != min(allCurrPoints_x) or segment[1].x != max(allCurrPoints_x):
-                # print "STRAIGHT"
-                del crossPoints[-1]
-                i = -2
-                n = 2
-
-        FirstCrossPointA = NSPoint(crossPoints[i].x,crossPoints[i].y)           #blue
-        FirstCrossPointB = NSPoint(MINUScrossPoints[n].x,MINUScrossPoints[n].y) #red
-
-        FirstDistance  = distance( closestData['onCurve'], FirstCrossPointA )
-        SecondDistance = distance( closestData['onCurve'], FirstCrossPointB )
-
-        # drawsLine between points on curve
-        # NSBezierPath.setDefaultLineWidth_( 1.0 / scale )
-
-        firstDraws  = False
-        red  = ( 0.96, 0.44, 0.44, 1 )
-        blue = ( 0.65, 0.63, 0.94, 1 )
-        if FirstDistance < 1199:
-            firstDraws = True
-            self.showDistance(FirstDistance, FirstCrossPointA, closestData['onCurve'], blue)
-        if SecondDistance < 1199:
-            secondColor = blue
-            if firstDraws == True:
-                secondColor = red
-            self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
+                firstDraws  = False
+                red  = ( 0.96, 0.44, 0.44, 1 )
+                blue = ( 0.65, 0.63, 0.94, 1 )
+                if 0.01 < FirstDistance < 1199:
+                    firstDraws = True
+                    self.showDistance(FirstDistance, FirstCrossPointA, closestData['onCurve'], blue)
+                if 0.01 < SecondDistance < 1199:
+                    secondColor = blue
+                    if firstDraws == True:
+                        secondColor = red
+                    self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
+            except Exception as e:
+                print
+                print case, "MINUScrossPoints", len(MINUScrossPoints), "crossPoints", len(crossPoints)
+                print e
+                import traceback
+                print traceback.format_exc()
 
     def showDistance(self, d, cross, onCurve, color):
         self.lastNodePair = (cross, onCurve)
@@ -217,8 +235,10 @@ class StemThickness(ReporterPlugin):
         try:
             Glyphs.removeCallback(self.mouseDidMove, MOUSEMOVED)
             self.lastNodePair = None
-        except:
-            NSLog(traceback.format_exc())
+        except Exception as e:
+            print e
+            import traceback
+            print traceback.format_exc()
 
     def drawPoint(self, ThisPoint, scale, color = ( 0.2, 0.6, 0.6, 0.7 )):
         """from Show Angled Handles by MekkaBlue"""
@@ -227,8 +247,10 @@ class StemThickness(ReporterPlugin):
             seledinCircles = NSBezierPath.alloc().init()
             seledinCircles.appendBezierPath_( self.roundDotForPoint( ThisPoint, scale ) )
             seledinCircles.fill()
-        except:
-            print(traceback.format_exc())
+        except Exception as e:
+            print e
+            import traceback
+            print traceback.format_exc()
 
     def roundDotForPoint( self, thisPoint, markerWidth ):
         """
@@ -325,45 +347,18 @@ class StemThickness(ReporterPlugin):
         roundedRect.stroke()
         self.drawTextAtPoint(thisString, center, fontsize, align="center" )
 
-    def drawTextAtPoint(self, text, textPosition, fontSize=10.0, fontColor=NSColor.blackColor(), align='center'):
-        """
-        custom drawTextAtPoint() by Mark.
-        """
-        try:
-
-            alignment = {
-                'topleft': 6,
-                'topcenter': 7,
-                'topright': 8,
-                'left': 3,
-                'center': 4,
-                'right': 5,
-                'bottomleft': 0,
-                'bottomcenter': 1,
-                'bottomright': 2
-                }
-
-            glyphEditView = self.controller.graphicView()
-            currentZoom = self.getScale()
-            fontAttributes = {
-                NSFontAttributeName: NSFont.labelFontOfSize_(fontSize/currentZoom),
-
-                # NSForegroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 1, 1, 1, 1 ), # fontColor, original
-                NSForegroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 0,0,0,1 ), # fontColor,
-                # NSBackgroundColorAttributeName: NSColor.colorWithCalibratedRed_green_blue_alpha_( 0, .3, .8, .65 ),
-                }
-            displayText = NSAttributedString.alloc().initWithString_attributes_(text, fontAttributes)
-            textAlignment = alignment[align] # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
-            glyphEditView.drawText_atPoint_alignment_(displayText, textPosition, textAlignment)
-        except:
-            self.logError(traceback.format_exc())
-
     def conditionalContextMenus(self):
         contextMenus = []
         if not self.lastNodePair is None:
             contextMenus.append({
-                    'name': "Add Guide for Measurement", 
-                    'action': self.addGuideForMeasurement
+                    'name': Glyphs.localize({
+                        'en': u'Add Measurement Guide', 
+                        'de': u'Messlinie hinzufügen',
+                        'fr': u'Ajouter un guide de dimension',
+                        'es': u'Añadir guía con medidas',
+                        'jp': u'計測ガイドを追加',
+                    }),
+                    'action': self.addGuideForMeasurement,
                 })
         return contextMenus
 
