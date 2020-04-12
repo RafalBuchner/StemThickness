@@ -3,9 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleDisplayName</key>
-	<string>StemThickness</string>
+	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>plugin</string>
 	<key>CFBundleIdentifier</key>
@@ -14,25 +12,23 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>Stem Thickness</string>
-	<key>CFBundlePackageType</key>
-	<string>BNDL</string>
-	<key>CFBundleVersion</key>
-	<string>25</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3</string>
+	<string>2.0</string>
+	<key>CFBundleVersion</key>
+	<string>26</string>
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/RafalBuchner/StemThickness/master/StemThickness.glyphsReporter/Contents/Info.plist</string>
 	<key>productPageURL</key>
 	<string>https://github.com/RafalBuchner/StemThickness</string>
 	<key>productReleaseNotes</key>
-	<string>New shortcut ctrl-S (fix #24), localizations, code cleanup</string>
+	<string>Glyphs 3 compatibility.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright, Rafał Buchner, 2016</string>
 	<key>NSPrincipalClass</key>
 	<string>StemThickness</string>
 	<key>PyMainFileNames</key>
 	<array>
-		<string>../MacOS/main.py</string>
+		<string>plugin.py</string>
 	</array>
 </dict>
 </plist>
