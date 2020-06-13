@@ -12,7 +12,7 @@ from __future__ import division, print_function, unicode_literals
 #
 ###########################################################################################################
 
-import objc, math, time
+import objc, math
 from GlyphsApp import *
 from GlyphsApp.plugins import *
 import traceback
