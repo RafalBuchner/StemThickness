@@ -12,9 +12,10 @@ from __future__ import division, print_function, unicode_literals
 #
 ###########################################################################################################
 
-import objc, math
+import objc, math, time
 from GlyphsApp import *
 from GlyphsApp.plugins import *
+import traceback
 
 @objc.python_method
 def pathAB(t,Wx,Wy):
@@ -45,9 +46,7 @@ def angle( A, B ):
 		else:
 			tangens = yDiff / xDiff
 		return math.atan( tangens )
-	except Exception as e:
-		print(e)
-		import traceback
+	except:
 		print(traceback.format_exc())
 
 @objc.python_method
@@ -96,9 +95,7 @@ class StemThickness(ReporterPlugin):
 			import cProfile
 			cProfile.runctx('self._foreground(layer)', globals(), locals())
 			print("**")
-		except Exception as e:
-			print(e)
-			import traceback
+		except:
 			print(traceback.format_exc())
 		
 	@objc.python_method
@@ -213,11 +210,7 @@ class StemThickness(ReporterPlugin):
 					if firstDraws == True:
 						secondColor = red
 					self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
-			except Exception as e:
-				print()
-				print(case, "MINUScrossPoints", len(MINUScrossPoints), "crossPoints", len(crossPoints))
-				print(e)
-				import traceback
+			except:
 				print(traceback.format_exc())
 
 	@objc.python_method
@@ -245,9 +238,7 @@ class StemThickness(ReporterPlugin):
 		try:
 			Glyphs.removeCallback(self.mouseDidMove_, MOUSEMOVED)
 			self.lastNodePair = None
-		except Exception as e:
-			print(e)
-			import traceback
+		except:
 			print(traceback.format_exc())
 
 	@objc.python_method
@@ -258,9 +249,7 @@ class StemThickness(ReporterPlugin):
 			seledinCircles = NSBezierPath.alloc().init()
 			seledinCircles.appendBezierPath_( self.roundDotForPoint( ThisPoint, scale ) )
 			seledinCircles.fill()
-		except Exception as e:
-			print(e)
-			import traceback
+		except:
 			print(traceback.format_exc())
 
 	@objc.python_method
@@ -342,6 +331,7 @@ class StemThickness(ReporterPlugin):
 				"layer": layer,
 			}
 		except:
+			print(traceback.format_exc())
 			return None
 
 	####### From ShowStems by Mark2Mark
@@ -400,9 +390,7 @@ class StemThickness(ReporterPlugin):
 			
 			# make sure Show Guides is enabled:
 			Glyphs.defaults["showGuidelines"] = 1
-		except Exception as e:
-			print(e)
-			import traceback
+		except:
 			print(traceback.format_exc())
 
 	@objc.python_method
