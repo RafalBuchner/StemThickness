@@ -225,7 +225,7 @@ class StemThickness(ReporterPlugin):
 		NSColor.colorWithCalibratedRed_green_blue_alpha_(*color).set()
 		self.drawDashedStrokeAB(onCurve, cross)
 		self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, thisDistanceCenter, 8, color=color)
-		self.drawPoint(cross, zoomedMyPoints * 0.75, color=rcolor)
+		self.drawPoint(cross, zoomedMyPoints * 0.75, color=color)
 
 	def mouseDidMove_(self, notification):
 		if self.controller:
