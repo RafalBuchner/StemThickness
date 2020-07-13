@@ -120,92 +120,45 @@ class StemThickness(ReporterPlugin):
 		zoomedMyPoints = myPointsSize / scale
 
 		layer = closestData["layer"]
-		self.drawPoint(closestData['onCurve'], zoomedMyPoints)
+		closestPoint = closestData['onCurve']
+		self.drawPoint(closestPoint, zoomedMyPoints)
 		
 		# returns list of intersections
-		crossPoints = layer.intersectionsBetweenPoints(closestData['onCurve'], closestData['normal'])
-		MINUScrossPoints = layer.intersectionsBetweenPoints(closestData['onCurve'], closestData['minusNormal'])
+		crossPoints = layer.intersectionsBetweenPoints(closestData['normal'], closestData['minusNormal'])
 		
-		if len(crossPoints) > 2 or len(MINUScrossPoints) > 2:
-			segment = closestData["segment"]
-
-			if len(segment) == 4: # curves
-				MINUScrossPoints.reverse()
-				i = -2
-				n = -2
-			else: # lines
-				allCurrPoints_x = []
-				allCurrPoints_y = []
-				for path in layer.paths:
-					for node in path.nodes:
-						allCurrPoints_x.append(node.x)
-						allCurrPoints_y.append(node.y)
-
-				if segment[0].y == segment[1].y and segment[0].y != min(allCurrPoints_y) and segment[0].y != max(allCurrPoints_y):
-					# FOR LINES THAT ARE HORIZONTAL
-					case = "HORIZONTAL"
-					crossPoints.reverse()
-					del crossPoints[-1]
-					del MINUScrossPoints[-1]
-					i = -2
-					n = -2
-				elif segment[0].y == segment[1].y and segment[0].y == min(allCurrPoints_y):
-					# FOR LINES THAT ARE HORIZONTAL and stays at the lowest level
-					case = "LOW LEVEL"
-					MINUScrossPoints.reverse()
-					crossPoints.reverse()
-					del crossPoints[-1]
-					i = -2
-					n = 1
-				elif segment[0].y == segment[1].y and segment[0].y == max(allCurrPoints_y):
-					# FOR LINES THAT ARE HORIZONTAL and stays at the highest level
-					case = "HIGH LEVEL"
-					MINUScrossPoints.reverse()
-					crossPoints.reverse()
-					del crossPoints[-1]
-					del MINUScrossPoints[-1]
-					i = 0
-					n = 2
-				elif segment[0].x == max(allCurrPoints_x) and segment[1].x == max(allCurrPoints_x):
-					# for lines extreme right vertical lines
-					case = "RIGHT LEVEL"
-					crossPoints.reverse()
-					i = 2
-					n = 1
-				elif segment[0].x == segment[1].x and segment[1].x == min(allCurrPoints_x):
-					# for lines extreme left vertical lines
-					case = "LEFT LEVEL"
-					i = 0
-					n = 2
-				elif segment[0].x != segment[1].x and segment[0].y != segment[1].y:
-					case = "DIAGONAL"
-					del crossPoints[-1]
-					i = -2
-					n = 2 % len(MINUScrossPoints) # avoid out of range in blunt corners
-				elif segment[0].x == segment[1].x and segment[1].x != min(allCurrPoints_x) or segment[1].x != max(allCurrPoints_x):
-					case = "STRAIGHT"
-					del crossPoints[-1]
-					i = -2
-					n = 2
-		
+		if len(crossPoints) > 2:
+			# find closest point in the list of intersections
+			# the point before and after that point is what we are looking for
+			closestI = -1
+			closestDistance = 1000000
+			i = 0
+			for cross in crossPoints:
+				dist = distance(NSPoint(cross.x, cross.y), closestPoint)
+				if dist < closestDistance:
+					closestDistance = dist
+					closestI = i
+				i += 1
+			if closestI < 1:
+				return
+			i = closestI
+			n = i - 1
+			if i < len(crossPoints):
+				i += 1
 			try:
-				FirstCrossPointA = NSPoint(crossPoints[i].x, crossPoints[i].y)				#blue
-				FirstDistance  = distance(closestData['onCurve'], FirstCrossPointA)
-				FirstCrossPointB = NSPoint(MINUScrossPoints[n].x, MINUScrossPoints[n].y)	#red
-				SecondDistance = distance(closestData['onCurve'], FirstCrossPointB)
-
-				# drawsLine between points on curve
-				# NSBezierPath.setDefaultLineWidth_(1.0 / scale)
+				FirstCrossPointA = NSPoint(crossPoints[i].x, crossPoints[i].y)	#blue
+				FirstDistance  = distance(closestPoint, FirstCrossPointA)
+				FirstCrossPointB = NSPoint(crossPoints[n].x, crossPoints[n].y)	#red
+				SecondDistance = distance(closestPoint, FirstCrossPointB)
 
 				firstDraws  = False
 				if 0.01 < FirstDistance < 1199:
 					firstDraws = True
-					self.showDistance(FirstDistance, FirstCrossPointA, closestData['onCurve'], blue)
+					self.showDistance(FirstDistance, FirstCrossPointA, closestPoint, blue)
 				if 0.01 < SecondDistance < 1199:
 					secondColor = blue
 					if firstDraws == True:
 						secondColor = red
-					self.showDistance(SecondDistance, FirstCrossPointB, closestData['onCurve'], secondColor)
+					self.showDistance(SecondDistance, FirstCrossPointB, closestPoint, secondColor)
 			except:
 				print(traceback.format_exc())
 
