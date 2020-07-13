@@ -241,9 +241,8 @@ class StemThickness(ReporterPlugin):
 	def drawPoint(self, ThisPoint, scale, color=pointColor):
 		"""from Show Angled Handles by MekkaBlue"""
 		try:
-			seledinCircles = NSBezierPath.alloc().init()
-			seledinCircles.appendBezierPath_(self.roundDotForPoint(ThisPoint, scale))
 			color.set()
+			seledinCircles = self.roundDotForPoint(ThisPoint, scale)
 			seledinCircles.fill()
 		except:
 			print(traceback.format_exc())
