@@ -17,13 +17,11 @@ from GlyphsApp import *
 from GlyphsApp.plugins import *
 import traceback
 
-@objc.python_method
 def pathAB(t, Wx, Wy):
 	summaX = Wx[0] + t * (Wx[1] - Wx[0])
 	summaY = Wy[0] + t * (Wy[1] - Wy[0])
 	return NSPoint(summaX, summaY)
 
-@objc.python_method
 def calcTangent(t, segment):
 	# calculates reference Tangent Point (from its coordinates plugin will be able to get tangent's direction)
 	if len(segment) == 4: # for curves
@@ -35,7 +33,6 @@ def calcTangent(t, segment):
 	Tangent = NSPoint(R2.x, R2.y)
 	return Tangent
 
-@objc.python_method
 def angle(A, B):
 	try:
 		"""calc angle between AB and Xaxis """
@@ -49,7 +46,6 @@ def angle(A, B):
 	except:
 		print(traceback.format_exc())
 
-@objc.python_method
 def rotatePoint(P, angle, originPoint):
 		"""Rotates x/y around x_orig/y_orig by angle and returns result as [x, y]."""
 		alfa = math.radians(angle)
@@ -60,7 +56,6 @@ def rotatePoint(P, angle, originPoint):
 		RotatedPoint = NSPoint(x, y)
 		return RotatedPoint
 
-@objc.python_method
 def formatDistance(d, scale):
 	# calculates how value of thickness will be shown
 	if scale < 2:
