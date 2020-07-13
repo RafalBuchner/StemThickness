@@ -17,6 +17,9 @@ from GlyphsApp import *
 from GlyphsApp.plugins import *
 import traceback
 
+red  = NSColor.colorWithCalibratedRed_green_blue_alpha_(0.96, 0.44, 0.44, 1)
+blue = NSColor.colorWithCalibratedRed_green_blue_alpha_(0.65, 0.63, 0.94, 1)
+pointColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0.2, 0.6, 0.6, 0.7)
 def pathAB(t, Wx, Wy):
 	summaX = Wx[0] + t * (Wx[1] - Wx[0])
 	summaY = Wy[0] + t * (Wy[1] - Wy[0])
@@ -195,8 +198,6 @@ class StemThickness(ReporterPlugin):
 				# NSBezierPath.setDefaultLineWidth_(1.0 / scale)
 
 				firstDraws  = False
-				red  = (0.96, 0.44, 0.44, 1)
-				blue = (0.65, 0.63, 0.94, 1)
 				if 0.01 < FirstDistance < 1199:
 					firstDraws = True
 					self.showDistance(FirstDistance, FirstCrossPointA, closestData['onCurve'], blue)
@@ -217,7 +218,7 @@ class StemThickness(ReporterPlugin):
 		zoomedMyPoints = myPointsSize / scale
 		distanceShowed = formatDistance(d, scale)
 		thisDistanceCenter = pathAB(0.5, (onCurve.x, cross.x), (onCurve.y, cross.y))
-		NSColor.colorWithCalibratedRed_green_blue_alpha_(*color).set()
+		color.set()
 		self.drawDashedStrokeAB(onCurve, cross)
 		self.drawRoundedRectangleForStringAtPosition(" %s " % distanceShowed, thisDistanceCenter, 8, color=color)
 		self.drawPoint(cross, zoomedMyPoints * 0.75, color=color)
@@ -237,12 +238,12 @@ class StemThickness(ReporterPlugin):
 			print(traceback.format_exc())
 
 	@objc.python_method
-	def drawPoint(self, ThisPoint, scale, color = (0.2, 0.6, 0.6, 0.7)):
+	def drawPoint(self, ThisPoint, scale, color=pointColor):
 		"""from Show Angled Handles by MekkaBlue"""
 		try:
-			NSColor.colorWithCalibratedRed_green_blue_alpha_(*color).set()
 			seledinCircles = NSBezierPath.alloc().init()
 			seledinCircles.appendBezierPath_(self.roundDotForPoint(ThisPoint, scale))
+			color.set()
 			seledinCircles.fill()
 		except:
 			print(traceback.format_exc())
@@ -341,12 +342,11 @@ class StemThickness(ReporterPlugin):
 		panel = NSRect()
 		panel.origin = NSPoint(x-width / 2, y - scaledSize / 2 - rim)
 		panel.size = NSSize(width, scaledSize + rim * 2)
-		NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1).set()
-		# NSColor.colorWithCalibratedRed_green_blue_alpha_(*color).set() # ORGINAL
+		NSColor.textBackgroundColor().set()
 		roundedRect = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(panel, scaledSize * 0.5, scaledSize * 0.5)
 		roundedRect.fill()
-		NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 0.1).set()
-		roundedRect.setLineWidth_(1.0 / self.getScale())
+		NSColor.textColor().set()
+		roundedRect.setLineWidth_(0.1 / self.getScale())
 		roundedRect.stroke()
 		self.drawTextAtPoint(thisString, center, fontsize, align="center")
 
