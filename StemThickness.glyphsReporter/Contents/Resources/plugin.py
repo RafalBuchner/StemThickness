@@ -285,7 +285,7 @@ class StemThickness(ReporterPlugin):
 	####### From ShowStems by Mark2Mark
 
 	@objc.python_method
-	def drawRoundedRectangleForStringAtPosition(self, thisString, center, fontsize, color=(0, .3, .8, .65)):
+	def drawRoundedRectangleForStringAtPosition(self, thisString, center, fontsize, color=(0, .3, .9, .65)):
 		''' Thanks to Mekkablue for this one '''
 		x, y = center
 		scaledSize = fontsize / self.getScale()
@@ -300,7 +300,7 @@ class StemThickness(ReporterPlugin):
 		NSColor.textColor().set()
 		roundedRect.setLineWidth_(0.1 / self.getScale())
 		roundedRect.stroke()
-		self.drawTextAtPoint(thisString, center, fontsize, align="center")
+		self.drawTextAtPoint(thisString, center, fontsize, fontColor = NSColor.textColor(), align=“center”)
 
 	@objc.python_method
 	def conditionalContextMenus(self):
