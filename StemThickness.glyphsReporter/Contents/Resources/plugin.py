@@ -73,6 +73,7 @@ def formatDistance(d, scale):
 
 class StemThickness(ReporterPlugin):
 	lastNodePair = None
+	controller = None
 	
 	@objc.python_method
 	def settings(self):
