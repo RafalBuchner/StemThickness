@@ -260,6 +260,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 29;
 				DEPLOYMENT_LOCATION = YES;
 				DEVELOPMENT_TEAM = X2L8375ZQ7;
 				DSTROOT = "$(USER_LIBRARY_DIR)/Application Support/Glyphs 3/Plugins";
@@ -267,6 +268,7 @@
 				GCC_PREFIX_HEADER = "StemThickness/StemThickness-Prefix.pch";
 				INFOPLIST_FILE = StemThickness/Info.plist;
 				INSTALL_PATH = /;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.RafalBuchner.StemThickness;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -279,11 +281,13 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = X2L8375ZQ7;
 				FRAMEWORK_SEARCH_PATHS = "\"$(SYSTEM_APPS_DIR)/Glyphs 3.app/Contents/Frameworks\"";
 				GCC_PREFIX_HEADER = "StemThickness/StemThickness-Prefix.pch";
 				INFOPLIST_FILE = StemThickness/Info.plist;
 				INSTALL_PATH = /;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.RafalBuchner.StemThickness;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = glyphsReporter;
