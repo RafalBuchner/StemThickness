@@ -20,6 +20,12 @@
 #import <GlyphsCore/GSCallbackHandler.h>
 #import <GlyphsCore/NSString+BadgeDrawing.h>
 
+NSPoint GSMiddlePointStem(NSPoint A, NSPoint B) {
+	A.x = (A.x + B.x) * 0.5;
+	A.y = (A.y + B.y) * 0.5;
+	return A;
+}
+
 NSString *formatDistance(CGFloat d, CGFloat scale) {
 	// calculates how value of thickness will be shown
 	if (scale < 2) {
@@ -204,7 +210,7 @@ static NSColor *pointColor = nil;
 	CGFloat handleSize = [self getHandleSize];
 	CGFloat zoomedHandleSize = handleSize * 0.875 * 0.75 / _scale;
 	NSString *distanceShowed = formatDistance(d, _scale);
-	NSPoint thisDistanceCenter = GSMiddlePointLine(onCurve, cross);
+	NSPoint thisDistanceCenter = GSMiddlePointStem(onCurve, cross);
 	[color set];
 	[self drawDashedStrokeA:onCurve b:cross];
 	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:8 / _scale color:NSColor.textBackgroundColor backgroundColor:color alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
