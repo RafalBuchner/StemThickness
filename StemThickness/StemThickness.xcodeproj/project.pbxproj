@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		56F2F7EF2606B0CF00AE26EF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56F2F7EE2606B0CF00AE26EF /* Cocoa.framework */; };
 		56F2F7F32606B0CF00AE26EF /* StemThickness.m in Sources */ = {isa = PBXBuildFile; fileRef = 56F2F7F22606B0CF00AE26EF /* StemThickness.m */; };
-		56F2F7F72606B0CF00AE26EF /* StemThickness-Prefix.pch in Resources */ = {isa = PBXBuildFile; fileRef = 56F2F7F62606B0CF00AE26EF /* StemThickness-Prefix.pch */; };
 		56F2F8052606B0F200AE26EF /* GlyphsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56F2F8042606B0F200AE26EF /* GlyphsCore.framework */; };
 /* End PBXBuildFile section */
 
@@ -130,7 +129,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				56F2F7F72606B0CF00AE26EF /* StemThickness-Prefix.pch in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
