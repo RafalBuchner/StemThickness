@@ -49,6 +49,7 @@ static NSColor *pointColor = nil;
 	NSViewController <GSGlyphEditViewControllerProtocol> *_editViewController;
 	id _lastNodePair;
 	CGFloat _scale;
+	NSPoint _layerOrigin;
 }
 
 + (void)initialize {
@@ -85,16 +86,20 @@ static NSColor *pointColor = nil;
 	return NSEventModifierFlagControl;
 }
 
-- (void)drawForegroundForLayer:(GSLayer *)layer options:(NSDictionary *)options {
-//- (void)drawForegroundWithOptions:(NSDictionary *)options {
+- (void)drawForegroundWithOptions:(NSDictionary *)options {
 	NSView <GSGlyphEditViewProtocol> *view = _editViewController.graphicView;
-	NSPoint crossHairCenter = [view getActiveLocation:[NSApp currentEvent]];
 	_scale = view.scale; // scale of edit window
-	//GSLayer *layer = [view activeLayer];
+	GSFont *font = [_editViewController representedObject];
+	CGFloat upm = font.unitsPerEm;
+	NSPoint crossHairCenter = [view getActiveLocation:[NSApp currentEvent]];
+	_layerOrigin = view.activePosition;
+
+	GSLayer *layer = [view activeLayer];
 	NSDictionary *closestData = [self calcClosestInfo:layer position:crossHairCenter];
 	if (!closestData) {
 		return;
 	}
+	GSLog(@"closestData %@", closestData);
 	if (GSDistance(crossHairCenter, [closestData[@"onCurve"] pointValue]) > 35 / _scale) {
 		_lastNodePair = nil;
 		return;
@@ -104,9 +109,7 @@ static NSColor *pointColor = nil;
 
 - (CGFloat)getHandleSize {
 	/*
-	Returns the current handle size as set in user preferences.
-	Use: self.getHandleSize() / self.getScale()
-	to determine the right size for drawing on the canvas.
+	 Returns the current handle size as set in user preferences.
 	 */
 	NSUInteger Selected = [NSUserDefaults.standardUserDefaults integerForKey:@"GSHandleSize"];
 	if (Selected == 0) {
@@ -150,11 +153,11 @@ static NSColor *pointColor = nil;
 - (void)drawCrossingsForData:(NSDictionary *)closestData {
 	CGFloat HandleSize = [self getHandleSize];
 
-	CGFloat zoomedHandleSize = HandleSize * 0.875 / _scale;
+	CGFloat zoomedHandleSize = HandleSize * 0.875;
 
 	GSLayer *layer = closestData[@"layer"];
 	NSPoint closestPoint = [closestData[@"onCurve"] pointValue];
-	[self drawPoint:closestPoint size:zoomedHandleSize color:nil];
+
 
 	// returns list of intersections
 	NSArray *crossPoints = [layer calculateIntersectionsStartPoint:[closestData[@"normal"] pointValue] endPoint:[closestData[@"minusNormal"] pointValue] decompose:NO];
@@ -188,6 +191,15 @@ static NSColor *pointColor = nil;
 			NSPoint FirstCrossPointB = [crossPoints[n] pointValue];	// red
 			CGFloat SecondDistance = GSDistance(closestPoint, FirstCrossPointB);
 
+			closestPoint = GSScalePoint(closestPoint, _scale);
+			closestPoint = GSAddPoints(closestPoint, _layerOrigin);
+			FirstCrossPointA = GSScalePoint(FirstCrossPointA, _scale);
+			FirstCrossPointA = GSAddPoints(FirstCrossPointA, _layerOrigin);
+			FirstCrossPointB = GSScalePoint(FirstCrossPointB, _scale);
+			FirstCrossPointB = GSAddPoints(FirstCrossPointB, _layerOrigin);
+
+			[self drawPoint:closestPoint size:zoomedHandleSize color:nil];
+
 			BOOL firstDraws = NO;
 			if (0.01 < FirstDistance && FirstDistance < 1199) {
 				firstDraws = YES;
@@ -208,12 +220,13 @@ static NSColor *pointColor = nil;
 	// self.lastNodePair = (cross, onCurve) //TODO
 
 	CGFloat handleSize = [self getHandleSize];
-	CGFloat zoomedHandleSize = handleSize * 0.875 * 0.75 / _scale;
+	CGFloat zoomedHandleSize = handleSize * 0.875 * 0.75;
 	NSString *distanceShowed = formatDistance(d, _scale);
 	NSPoint thisDistanceCenter = GSMiddlePointStem(onCurve, cross);
 	[color set];
 	[self drawDashedStrokeA:onCurve b:cross];
-	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:8 / _scale color:NSColor.textBackgroundColor backgroundColor:color alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
+	CGFloat fontSize = 10 * pow(_scale, 0.1);
+	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:fontSize color:NSColor.textBackgroundColor backgroundColor:color alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
 	[self drawPoint:cross size:zoomedHandleSize color:color];
 }
 
