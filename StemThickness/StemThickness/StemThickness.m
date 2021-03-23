@@ -226,7 +226,7 @@ static NSColor *pointColor = nil;
 	[color set];
 	[self drawDashedStrokeA:onCurve b:cross];
 	CGFloat fontSize = handleSize * 1.5 * pow(_scale, 0.1);
-	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:fontSize color:NSColor.textBackgroundColor backgroundColor:color alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
+	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:fontSize color:NSColor.textColor backgroundColor:[color blendedColorWithFraction:0.8 ofColor:NSColor.textBackgroundColor] alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
 	[self drawPoint:cross size:zoomedHandleSize color:color];
 }
 
