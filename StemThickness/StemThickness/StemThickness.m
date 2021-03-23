@@ -91,6 +91,9 @@ static NSColor *pointColor = nil;
 	_scale = view.scale; // scale of edit window
 	GSFont *font = [_editViewController representedObject];
 	CGFloat upm = font.unitsPerEm;
+	if (_scale < 0.15 * 1000 / upm || _scale > 6.0 * 1000 / upm) {
+		return;
+	}
 	NSPoint crossHairCenter = [view getActiveLocation:[NSApp currentEvent]];
 	_layerOrigin = view.activePosition;
 
