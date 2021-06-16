@@ -277,6 +277,10 @@ static NSColor *pointColor = nil;
 	return nil;
 }
 
+- (NSViewController <GSGlyphEditViewControllerProtocol>*)controller {
+	return _editViewController;
+}
+
 - (void)setController:(NSViewController <GSGlyphEditViewControllerProtocol>*)Controller {
 	// Use [self controller]; as object for the current view controller.
 	_editViewController = Controller;
