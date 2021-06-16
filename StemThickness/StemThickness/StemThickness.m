@@ -277,10 +277,6 @@ static NSColor *pointColor = nil;
 	return nil;
 }
 
-- (void)drawBackgroundForLayer:(GSLayer*)layer options:(NSDictionary *)options {}
-
-- (void)drawBackgroundForInactiveLayer:(GSLayer*)layer options:(NSDictionary *)options {}
-
 - (void)setController:(NSViewController <GSGlyphEditViewControllerProtocol>*)Controller {
 	// Use [self controller]; as object for the current view controller.
 	_editViewController = Controller;
