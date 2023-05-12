@@ -19,11 +19,24 @@
 #import <GlyphsCore/GSProxyShapes.h>
 #import <GlyphsCore/GSCallbackHandler.h>
 #import <GlyphsCore/NSString+BadgeDrawing.h>
+#import <GlyphsCore/GSWindowControllerProtocol.h>
+#import <GlyphsCore/GSGeometrieHelper.h>
+#import <vector>
+#import <algorithm>
 
-NSPoint GSMiddlePointStem(NSPoint A, NSPoint B) {
-	A.x = (A.x + B.x) * 0.5;
-	A.y = (A.y + B.y) * 0.5;
-	return A;
+@interface GSWindowController: NSWindowController<GSWindowControllerProtocol>
+@property NSArray *toolInstances;
+@end
+
+@interface GSDocument: NSDocument
+- (GSFontMaster*)selectedFontMaster;
+- (GSWindowController *) windowController;
+@end
+
+NSPoint GSMiddlePointStem(NSPoint a, NSPoint b) {
+	a.x = (a.x + b.x) * 0.5;
+	a.y = (a.y + b.y) * 0.5;
+	return a;
 }
 
 NSString *formatDistance(CGFloat d, CGFloat scale) {
@@ -46,10 +59,13 @@ static NSColor *blue = nil;
 static NSColor *pointColor = nil;
 
 @implementation StemThickness {
+	GSFont *_font;
+	GSFontMaster *_master;
 	NSViewController <GSGlyphEditViewControllerProtocol> *_editViewController;
-	id _lastNodePair;
 	CGFloat _scale;
 	NSPoint _layerOrigin;
+	NSUInteger _textCursorPosition;
+	NSArray *_allLayers;
 }
 
 + (void)initialize {
@@ -114,11 +130,11 @@ static NSColor *pointColor = nil;
 	/*
 	 Returns the current handle size as set in user preferences.
 	 */
-	NSUInteger Selected = [NSUserDefaults.standardUserDefaults integerForKey:@"GSHandleSize"];
-	if (Selected == 0) {
+	NSUInteger selected = [NSUserDefaults.standardUserDefaults integerForKey:@"GSHandleSize"];
+	if (selected == 0) {
 		return 5.0;
 	}
-	else if (Selected == 2) {
+	else if (selected == 2) {
 		return 10.0;
 	}
 	else {
@@ -127,101 +143,81 @@ static NSColor *pointColor = nil;
 }
 
 - (void)drawPoint:(NSPoint)thisPoint size:(CGFloat)size color:(NSColor *)color {
-
 	if (!color) {
 		color = pointColor;
 	}
 	// from Show Angled Handles by MekkaBlue
-	@try {
-		[color set];
-		NSRect myRect = NSMakeRect(thisPoint.x - size * 0.5, thisPoint.y - size * 0.5, size, size);
-		NSBezierPath *seledinCircles = [NSBezierPath bezierPathWithOvalInRect:myRect];
-		[seledinCircles fill];
-	}
-	@catch (NSException *exception) {
-		NSLog(@"__drawPoint %@", exception);
-	}
+	[color set];
+	NSRect myRect = NSMakeRect(thisPoint.x - size * 0.5, thisPoint.y - size * 0.5, size, size);
+	NSBezierPath *seledinCircles = [NSBezierPath bezierPathWithOvalInRect:myRect];
+	[seledinCircles fill];
 }
 
-- (void)drawDashedStrokeA:(NSPoint)A b:(NSPoint)B {
+- (void)drawDashedStrokeA:(NSPoint)a b:(NSPoint)b {
 	NSBezierPath *bez = [NSBezierPath bezierPath];
 	bez.lineWidth = 0;
 	CGFloat dash[] = {2.0, 2.0};
 	[bez setLineDash:dash count:2 phase:0];
-	[bez moveToPoint:A];
-	[bez lineToPoint:B];
+	[bez moveToPoint:a];
+	[bez lineToPoint:b];
 	[bez stroke];
 }
 
-- (void)drawCrossingsForData:(NSDictionary *)closestData {
-	CGFloat HandleSize = [self getHandleSize];
++(CGFloat)distanceSquared:(NSPoint)p1 to:(NSPoint)p2 {
+	return (p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y);
+}
 
-	CGFloat zoomedHandleSize = HandleSize * 0.875;
++(NSPoint)setLongerCoordinate:(NSPoint)v toLength:(CGFloat)length {
+	if (fabs(v.x) > fabs(v.y)) {
+		v.y *= length / v.x;
+		v.x = length;
+	}
+	else {
+		v.x *= length / v.y;
+		v.y = length;
+	}
+	return v;
+}
 
-	GSLayer *layer = closestData[@"layer"];
-
-	NSPoint closestPoint = [closestData[@"onCurve"] pointValue];
-
-	// returns list of intersections
-	NSArray *crossPoints = [layer calculateIntersectionsStartPoint:[closestData[@"normal"] pointValue] endPoint:[closestData[@"minusNormal"] pointValue] ];
-
-	if (crossPoints.count > 2) {
-		// find closest point in the list of intersections
-		// the point before and after that point is what we are looking for
-		NSInteger closestI = -1;
-		CGFloat closestDistance = 1000000;
-		NSInteger i = 0;
-		for (NSValue *crossValue in crossPoints) {
-			NSPoint cross = [crossValue pointValue];
-			CGFloat dist = GSDistance(cross, closestPoint);
-			if (dist < closestDistance) {
-				closestDistance = dist;
-				closestI = i;
-			}
-			i++;
+// returns the two points closest to referencePoint
++(NSArray *)closestPointsTo:(NSPoint)referencePoint inPoints:(NSArray *)points {
+	if (points.count <= 1) return points;
+	NSPoint prevPoint = [points.firstObject pointValue];
+	CGFloat toFirstSquared = [StemThickness distanceSquared:prevPoint to:referencePoint];
+	CGFloat prevSquared = toFirstSquared;
+	for (int i = 1; i != points.count; ++i) {
+		NSPoint point = [points[i] pointValue];
+		CGFloat distanceSquared = [StemThickness distanceSquared:point to:referencePoint];
+		CGFloat betweenSquared = [StemThickness distanceSquared:point to:prevPoint];
+		if (betweenSquared > distanceSquared + prevSquared) {
+			return [points subarrayWithRange:NSMakeRange(i-1, 2)];
 		}
-		if (closestI < 1) {
-			return;
-		}
-		i = closestI;
-		NSInteger n = i - 1;
-		if (i < crossPoints.count) {
-			i++;
-		}
-		@try {
-			NSPoint FirstCrossPointA = [crossPoints[i] pointValue];	// blue
-			CGFloat FirstDistance  = GSDistance(closestPoint, FirstCrossPointA);
-			NSPoint FirstCrossPointB = [crossPoints[n] pointValue];	// red
-			CGFloat SecondDistance = GSDistance(closestPoint, FirstCrossPointB);
+		prevSquared = distanceSquared;
+		prevPoint = point;
+	}
+	// must be outside the points.
+	NSUInteger loc = (toFirstSquared < prevSquared) ? 0 : (points.count - 2);
+	// ^ keep in mind that prevDistanceSquared is the distance to the last point
+	return [points subarrayWithRange:NSMakeRange(loc, 2)]; // the first or last two points
+}
 
-			closestPoint = GSScalePoint(closestPoint, _scale);
-			closestPoint = GSAddPoints(closestPoint, _layerOrigin);
-			FirstCrossPointA = GSScalePoint(FirstCrossPointA, _scale);
-			FirstCrossPointA = GSAddPoints(FirstCrossPointA, _layerOrigin);
-			FirstCrossPointB = GSScalePoint(FirstCrossPointB, _scale);
-			FirstCrossPointB = GSAddPoints(FirstCrossPointB, _layerOrigin);
-
-			[self drawPoint:closestPoint size:zoomedHandleSize color:nil];
-
-			BOOL firstDraws = NO;
-			if (0.01 < FirstDistance && FirstDistance < 1199) {
-				firstDraws = YES;
-				[self showDistance:FirstDistance cross:FirstCrossPointA onCurve:closestPoint color:blue];
-			}
-			if (0.01 < SecondDistance && SecondDistance < 1199) {
-				NSColor *secondColor = firstDraws ? red : blue;
-				[self showDistance:SecondDistance cross:FirstCrossPointB onCurve:closestPoint color:secondColor];
-			}
-		}
-		@catch (NSException *exception) {
-			NSLog(@"!!drawCrossingsForData %@", exception);
-		}
+- (void)drawCrossingsForPoints:(NSArray *)crossPoints {
+	NSPoint p0 = [crossPoints[0] pointValue];
+	NSPoint p1 = [crossPoints[1] pointValue];
+	CGFloat distance01 = GSDistance(p0, p1);
+	[self showDistance:distance01 cross:p0 onCurve:p1 color:blue];
+	if (crossPoints.count == 3) {
+		NSPoint p2 = [crossPoints[2] pointValue];
+		CGFloat distance12 = GSDistance(p2, p1);
+		[self showDistance:distance12 cross:p2 onCurve:p1 color:blue];
 	}
 }
 
 - (void)showDistance:(CGFloat)d cross:(NSPoint)cross onCurve:(NSPoint)onCurve color:(NSColor *)color {
-	// self.lastNodePair = (cross, onCurve) //TODO
-
+	cross = GSScalePoint(cross, _scale);
+	cross = GSAddPoints(cross, _layerOrigin);
+	onCurve = GSScalePoint(onCurve, _scale);
+	onCurve = GSAddPoints(onCurve, _layerOrigin);
 	CGFloat handleSize = [self getHandleSize];
 	CGFloat zoomedHandleSize = handleSize * 0.875 * 0.75;
 	NSString *distanceShowed = formatDistance(d, _scale);
@@ -231,6 +227,7 @@ static NSColor *pointColor = nil;
 	CGFloat fontSize = handleSize * 1.5 * pow(_scale, 0.1);
 	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:fontSize color:NSColor.textColor backgroundColor:[color blendedColorWithFraction:0.8 ofColor:NSColor.textBackgroundColor] alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
 	[self drawPoint:cross size:zoomedHandleSize color:color];
+	[self drawPoint:onCurve size:zoomedHandleSize color:color];
 }
 
 - (void)mouseMoved:(NSNotification *)notification {
@@ -245,36 +242,116 @@ static NSColor *pointColor = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (NSDictionary *)calcClosestInfo:(GSLayer *)layer position:(NSPoint)pt {
-	@try {
-		NSPoint closestPoint = NSZeroPoint;
-		CGFloat dist = 100000.0;
-		for (GSPath *path in layer.paths) {
-			CGFloat currPathTime;
-			NSPoint currClosestPoint = [path nearestPointOnPath:pt pathTime:&currPathTime];
-			CGFloat currDist = GSDistance(currClosestPoint, pt);
-			if (currDist < dist) {
-				dist = currDist;
-				closestPoint = currClosestPoint;
+
++(NSPoint)closestPointToCursor:(NSPoint)cursor onLayer:(GSLayer *)layer {
+	NSPoint closestPoint = NSMakePoint(CGFLOAT_MAX, CGFLOAT_MAX);
+	CGFloat closestDistSquared = CGFLOAT_MAX;
+	GSLayer * decomposedLayer = [layer copyDecomposedLayer];
+	for (GSPath *path in decomposedLayer.paths) {
+		CGFloat currPathTime; // just a dummy, result unused
+		NSPoint currClosestPoint = [path nearestPointOnPath:cursor pathTime:&currPathTime];
+		CGFloat currDistSquared = [StemThickness distanceSquared:cursor to:currClosestPoint];
+		if (currDistSquared < closestDistSquared) {
+			closestDistSquared = currDistSquared;
+			closestPoint = currClosestPoint;
+		}
+	}
+	return closestPoint;
+}
+
++(NSPoint)closestPointToCursorNEW:(NSPoint)cursor onLayer:(GSLayer *)layer {
+	GSLayer * decomposedLayer = [layer copyDecomposedLayer];
+	std::vector<std::pair<double,std::pair<double, double>>> closestPoints;
+	for (GSPath *path in decomposedLayer.paths) {
+		for ( int i = 0; i != path.countOfNodes; ++i ) {
+			GSNode * p0 = path.nodes[i];
+			if ( p0.type == OFFCURVE ) continue;
+			GSNode * p1 = path.nodes[(i+1) % path.countOfNodes];
+			CGFloat t;
+			NSPoint nearestPointInSegment;
+			if ( p1.type == OFFCURVE ) {
+				GSNode * p2 = path.nodes[(i+2) % path.countOfNodes];
+				GSNode * p3 = path.nodes[(i+3) % path.countOfNodes];
+				assert( p3 == p0.nextOncurveNode );
+				NSPoint p0p = p0.position;
+				NSPoint p1p = p1.position;
+				NSPoint p2p = p2.position;
+				NSPoint p3p = p3.position;
+				CGFloat * tp = &t;
+				nearestPointInSegment = GSNearestPointOnCurve( cursor, p0p, p1p, p2p, p3p, tp );
 			}
+			else {
+				assert( p1 == p0.nextOncurveNode );
+//				nearestPointInSegment = GSNearestPointOnLine( cursor, p0.position, p1.position, &t );
+			}
+			CGFloat dsq = [StemThickness distanceSquared:cursor to:nearestPointInSegment];
+			closestPoints.emplace_back( dsq, std::make_pair( nearestPointInSegment.x, nearestPointInSegment.y ) );
 		}
-		if (dist > 99999.0) {
-			return nil;
+	}
+	std::sort( closestPoints.begin(), closestPoints.end() );
+	auto nearest = closestPoints.front().second;
+	return NSMakePoint( nearest.first, nearest.second );
+}
+
+- (NSArray *)intersectionsOnNeighbourLayer:(GSLayer *)layer left:(BOOL)left crossPoints:(NSArray *)crossPoints closestPointNormal:(NSPoint)closestPointNormal minusClosestPointNormal:(NSPoint)minusClosestPointNormal {
+	if (left && _textCursorPosition == 0) return crossPoints;
+	if (! left && _textCursorPosition == _allLayers.count - 1) return crossPoints;
+	assert(_allLayers[_textCursorPosition] == layer);
+	GSLayer *neighbour = left ? _allLayers[_textCursorPosition-1] : _allLayers[_textCursorPosition+1];
+	CGFloat xOffset = left ? -neighbour.width : layer.width;
+	GSGlyph *firstGlyph = left ? neighbour.parent : layer.parent;
+	GSGlyph *secondGlyph = left ? layer.parent : neighbour.parent;
+	CGFloat kerning = [_font kerningForFontMasterID:_master.id firstGlyph:firstGlyph secondGlyph:secondGlyph direction:GSWritingDirectionLeftToRight];
+	if (kerning != LLONG_MAX) {
+		// ^ Glyphs returns this funny value if kerning not defined
+		xOffset += left ? -kerning : kerning;
+	}
+	closestPointNormal.x -= xOffset;
+	minusClosestPointNormal.x -= xOffset;
+	NSArray *crossPointsNeighbour = [neighbour calculateIntersectionsStartPoint:closestPointNormal endPoint:minusClosestPointNormal decompose:YES];
+	if (crossPointsNeighbour.count < 2) {
+		// no neighbour intersections
+		return crossPoints;
+	}
+	crossPointsNeighbour = [crossPointsNeighbour subarrayWithRange:NSMakeRange(1, crossPointsNeighbour.count - 2)];
+	NSMutableArray *temp = left ? [NSMutableArray array] : [crossPoints mutableCopy];
+	for (NSValue *v in crossPointsNeighbour) {
+		NSPoint point = v.pointValue;
+		point.x += xOffset;
+		[temp addObject:@(point)];
+	}
+	if (left) [temp addObjectsFromArray:crossPoints];
+	return temp;
+}
+
+- (NSArray *)intersectionsOnLayer:(GSLayer *)layer nearMouseCursor:(NSPoint)pt {
+	NSPoint closestPoint = [StemThickness closestPointToCursor:pt onLayer:layer];
+	if (closestPoint.x == CGFLOAT_MAX) return nil;
+	NSPoint direction = [StemThickness setLongerCoordinate:GSSubtractPoints(pt, closestPoint) toLength:_font.unitsPerEm+layer.width];
+	NSPoint startPoint = GSAddPoints(pt, direction);
+	NSPoint endPoint = GSSubtractPoints(pt, direction);
+	NSArray *crossPoints = [layer calculateIntersectionsStartPoint:startPoint endPoint:endPoint decompose:YES];
+	// note: the first and last objects in crossPoints are identical to the start and end points (or vice versa)
+	if (crossPoints.count <= 2) {
+		// no intersections found
+		return nil;
+	}
+	// remove the first and last element:
+	crossPoints = [crossPoints subarrayWithRange:NSMakeRange(1, crossPoints.count - 2)];
+	
+	if (startPoint.x > endPoint.x + 0.001) {
+		// not vertical
+		CGFloat xLeft = [crossPoints.firstObject pointValue].x;
+		CGFloat xRight = [crossPoints.lastObject pointValue].x;
+		if (pt.x < xLeft || pt.x > xRight) {
+			// outside the crossPoints
+			crossPoints = [self intersectionsOnNeighbourLayer:layer left:(pt.x < xLeft) crossPoints:crossPoints closestPointNormal:startPoint minusClosestPointNormal:endPoint];
+			// TODO: the point closest to the mouse cursor may be on the neighbouring layer
+			// TODO: ideally, the tool could be used to measure between or within far away neighbours,
+			//       just like Glyphs’ measurement tool
 		}
-		NSPoint direction = GSUnitVectorFromTo(pt, closestPoint);
-		NSPoint closestPointNormal = GSAddPoints(pt, GSScalePoint(direction, 10000));
-		NSPoint minusClosestPointNormal = GSAddPoints(pt, GSScalePoint(direction, -10000));
-		return @{
-			@"onCurve": @(closestPoint),
-			@"normal": @(closestPointNormal),
-			@"minusNormal": @(minusClosestPointNormal),
-			@"layer": layer,
-		};
 	}
-	@catch (NSException *exception) {
-		NSLog(@"__calcClosestInfo: %@", exception);
-	}
-	return nil;
+	return [StemThickness closestPointsTo:pt inPoints:crossPoints];
 }
 
 - (NSViewController <GSGlyphEditViewControllerProtocol>*)controller {
