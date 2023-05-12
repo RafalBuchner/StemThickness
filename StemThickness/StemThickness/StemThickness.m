@@ -97,7 +97,7 @@ static NSColor *pointColor = nil;
 	NSPoint crossHairCenter = [view getActiveLocation:[NSApp currentEvent]];
 	_layerOrigin = view.activePosition;
 
-	GSLayer *layer = [view activeLayer];
+	GSLayer *layer = [[view activeLayer] copyDecomposedLayer];
 	NSDictionary *closestData = [self calcClosestInfo:layer position:crossHairCenter];
 	if (!closestData) {
 		return;
@@ -159,11 +159,11 @@ static NSColor *pointColor = nil;
 	CGFloat zoomedHandleSize = HandleSize * 0.875;
 
 	GSLayer *layer = closestData[@"layer"];
+
 	NSPoint closestPoint = [closestData[@"onCurve"] pointValue];
 
-
 	// returns list of intersections
-	NSArray *crossPoints = [layer calculateIntersectionsStartPoint:[closestData[@"normal"] pointValue] endPoint:[closestData[@"minusNormal"] pointValue] decompose:NO];
+	NSArray *crossPoints = [layer calculateIntersectionsStartPoint:[closestData[@"normal"] pointValue] endPoint:[closestData[@"minusNormal"] pointValue] ];
 
 	if (crossPoints.count > 2) {
 		// find closest point in the list of intersections

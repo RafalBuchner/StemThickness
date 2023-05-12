@@ -262,7 +262,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 31;
 				DEPLOYMENT_LOCATION = YES;
-				DEVELOPMENT_TEAM = X2L8375ZQ7;
+				DEVELOPMENT_TEAM = YN8SYLCA2M;
 				DSTROOT = "$(USER_LIBRARY_DIR)/Application Support/Glyphs 3/Plugins";
 				FRAMEWORK_SEARCH_PATHS = "\"$(SYSTEM_APPS_DIR)/Glyphs 3.app/Contents/Frameworks\"";
 				GCC_PREFIX_HEADER = "StemThickness/StemThickness-Prefix.pch";
@@ -282,7 +282,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 31;
-				DEVELOPMENT_TEAM = X2L8375ZQ7;
+				DEVELOPMENT_TEAM = YN8SYLCA2M;
 				FRAMEWORK_SEARCH_PATHS = "\"$(SYSTEM_APPS_DIR)/Glyphs 3.app/Contents/Frameworks\"";
 				GCC_PREFIX_HEADER = "StemThickness/StemThickness-Prefix.pch";
 				INFOPLIST_FILE = StemThickness/Info.plist;
